@@ -1,23 +1,27 @@
 package org.example._555laba555;
 
-import com.google.gson.Gson;
+import com.opencsv.CSVReader;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.io.StringReader;
 
 public class HelloApplication extends Application {
-
     @Override
     public void start(Stage stage) {
-        stage.setTitle("JavaFX + Gson");
+        // Проверка OpenCSV
+        try (CSVReader reader = new CSVReader(new StringReader("test,works"))) {
+            String[] line = reader.readNext();
+            System.out.println("OpenCSV works: " + String.join(",", line));
+        } catch (Exception e) {
+            System.out.println("OpenCSV error: " + e.getMessage());
+        }
 
-        Label label = new Label("Hello JavaFX!");
-        VBox root = new VBox(label);
-        Scene scene = new Scene(root, 300, 200);
-
-        stage.setScene(scene);
+        // Минимальное окно
+        Label label = new Label("CSV OK");
+        stage.setScene(new Scene(label, 200, 100));
+        stage.setTitle("Test");
         stage.show();
     }
 

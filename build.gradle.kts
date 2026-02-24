@@ -17,10 +17,9 @@ javafx {
 }
 
 dependencies {
-    // Gson
-    implementation("com.google.code.gson:gson:2.10.1")
-
-    // Дополнительные JavaFX библиотеки (если нужны)
+    // CSV
+    implementation("com.opencsv:opencsv:5.9")
+    // Дополнительные JavaFX библиотеки
     implementation("org.controlsfx:controlsfx:11.2.1")
     implementation("com.dlsc.formsfx:formsfx-core:11.6.0")
     implementation("net.synedra:validatorfx:0.5.0")
