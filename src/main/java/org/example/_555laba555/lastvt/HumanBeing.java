@@ -1,16 +1,13 @@
-package org.example._555laba555;
+package org.example._555laba555.lastvt;
 
 import java.time.LocalDate;
-import java.util.function.ToDoubleBiFunction;
-import org.example._555laba555.WeaponType;
-import org.example._555laba555.Car;
-import org.example._555laba555.Mood;
-import org.example._555laba555.Coordinates;
+
 import java.util.Objects;
 
 
-
-
+/**
+ *
+ */
 public class HumanBeing implements Comparable<HumanBeing> {
     /**
      * Статический счётчик для генерации уникальных ID.
@@ -20,18 +17,51 @@ public class HumanBeing implements Comparable<HumanBeing> {
      * </p>
      */
     private static long idCounter = 1;
+    /**
+     *
+     */
     private Long id; //Поле не может быть null, Значение поля должно быть больше 0, Значение этого поля
     // должно быть уникальным, Значение этого поля должно генерироваться автоматически
+    /**
+     *
+     */
     private static Long maxId = 0L;
+    /**
+     *
+     */
     private String name; //Поле не может быть null, Строка не может быть пустой
+    /**
+     *
+     */
     private Coordinates coordinates; //Поле не может быть null
+    /**
+     *
+     */
     private java.time.LocalDate creationDate; //Поле не может быть null, Значение этого поля должно
     // генерироваться автоматически
+    /**
+     *
+     */
     private boolean realHero;
+    /**
+     *
+     */
     private Boolean hasToothpick; //Поле может быть null
+    /**
+     *
+     */
     private int impactSpeed;
+    /**
+     *
+     */
     private WeaponType weaponType; //Поле не может быть null
+    /**
+     *
+     */
     private Mood mood; //Поле не может быть null
+    /**
+     *
+     */
     private Car car; //Поле может быть null
 //TODO я сделал везде только null исключение, а на полях car и hasToothpick оно не имеет смысла потому что там не
 // требуется(надо переписать по умному)
@@ -53,7 +83,7 @@ public class HumanBeing implements Comparable<HumanBeing> {
         setName(name);
     }
     /**
-     * Конструктор для создания копии HumanBeing
+     * Конструктор для HumanBeing при создании персон из загруженного файла
      * Используется в методе copy()
      */
     public HumanBeing(Long id, String name, Coordinates coordinates, LocalDate creationDate,

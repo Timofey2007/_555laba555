@@ -1,6 +1,4 @@
-package org.example._555laba555;
-
-import java.util.Objects;
+package org.example._555laba555.lastvt;
 
 /**
  * Класс, с названием машины

@@ -1,4 +1,4 @@
-package org.example._555laba555;
+package org.example._555laba555.lastvt;
 
 import java.util.Objects;
 
