@@ -39,7 +39,6 @@ public class Coordinates {
         setY(y);
         setX(x);
     }
-    //TODO подумть
 
 
     /**
