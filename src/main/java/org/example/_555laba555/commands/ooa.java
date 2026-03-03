@@ -1,6 +1,6 @@
 package org.example._555laba555.commands;
 
-public class CommandsStack {
+public class ooa {
     public void toStringComm(){
         System.out.println("1. reag_add - создать новый реактив (интерактивно)\n" +
                 "2) reag_list [--q TEXT] - список реактивов, можно поиск.\n" +
