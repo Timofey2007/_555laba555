@@ -4,6 +4,9 @@ import com.opencsv.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Этот класс сохраняет и загружает данные в файл и из него, когда программа запускается заново
+ */
 public class ProgramState {
 
     private static final String DATA_FILE = "lab5_data.csv";
@@ -190,6 +193,13 @@ public class ProgramState {
     public void removeReagent(long id) {
         reagents.removeIf(r -> r.getId() == id);
         saveState();
+    }
+    public void clearAllData() {
+        reagents.clear();
+        batches.clear();
+        moves.clear();
+        saveState();
+        System.out.println( DATA_FILE + " очищен");
     }
 
     // Геттеры
