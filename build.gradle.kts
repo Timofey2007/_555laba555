@@ -18,16 +18,14 @@ javafx {
 
 
 dependencies {
-    // CSV
+
     implementation("com.opencsv:opencsv:5.9")
-    // Дополнительные JavaFX библиотеки
     implementation("org.controlsfx:controlsfx:11.2.1")
     implementation("com.dlsc.formsfx:formsfx-core:11.6.0")
     implementation("net.synedra:validatorfx:0.5.0")
     implementation("org.kordamp.ikonli:ikonli-javafx:12.3.1")
     implementation("org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0")
 
-    // Тестирование
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
