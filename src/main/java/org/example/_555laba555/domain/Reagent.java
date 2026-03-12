@@ -1,4 +1,4 @@
-package org.example._555laba555.base;
+package org.example._555laba555.domain;
 
 import java.time.Instant;
 import java.util.Objects;
