@@ -6,9 +6,6 @@ import org.example._555laba555.domain.StockMoveType;
 /**
  * Проверяет корректность данных движения.
  * Выполняет проверки количества, типа движения и причины.
- *
- * @author Студент
- * @version 1.0
  */
 public class MoveValidator {
     /** Максимальная длина причины */
@@ -16,9 +13,6 @@ public class MoveValidator {
 
     /**
      * Проверяет движение на соответствие основным требованиям.
-     *
-     * @param move проверяемое движение
-     * @throws ValidationException если данные не проходят проверку
      */
     public static void validate(StockMove move) {
         if (move == null) {
@@ -49,10 +43,6 @@ public class MoveValidator {
 
     /**
      * Проверяет, достаточно ли реактива для операции расхода или списания.
-     *
-     * @param move проверяемое движение
-     * @param currentQuantity текущее количество в партии
-     * @throws ValidationException если недостаточно реактива
      */
     public static void checkQuantity(StockMove move, double currentQuantity) {
         if ((move.getType() == StockMoveType.OUT || move.getType() == StockMoveType.DISCARD)

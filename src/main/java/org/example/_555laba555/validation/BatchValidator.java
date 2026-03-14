@@ -6,23 +6,14 @@ import org.example._555laba555.domain.BatchStatus;
 /**
  * Проверяет корректность данных партии реактива.
  * Выполняет проверки метки, количества, местоположения и других полей.
- *
- * @author Студент
- * @version 1.0
  */
 public class BatchValidator {
-    /** Максимальная длина метки партии */
     public static final int MAX_LABEL_LENGTH = 64;
 
-    /** Максимальная длина местоположения */
     public static final int MAX_LOCATION_LENGTH = 64;
 
     /**
      * Проверяет партию на соответствие всем требованиям.
-     * Если данные некорректны, выбрасывает ValidationException.
-     *
-     * @param batch проверяемая партия
-     * @throws ValidationException если данные не проходят проверку
      */
     public static void validate(ReagentBatch batch) {
         if (batch == null) {

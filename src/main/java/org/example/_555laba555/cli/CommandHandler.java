@@ -2,8 +2,6 @@ package org.example._555laba555.cli;
 
 import org.example._555laba555.domain.*;
 import org.example._555laba555.service.ServiceManager;
-import org.example._555laba555.storage.FileStorage;
-import org.example._555laba555.storage.StorageException;
 import org.example._555laba555.validation.ValidationException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,23 +12,13 @@ import java.util.List;
 
 /**
  * Основной обработчик команд пользователя.
- * Связывает ввод с консоли с бизнес-логикой сервисов.
  * Реализует все 10 команд из предметной области.
- *
- * @author Студент
- * @version 1.0
  */
 public class CommandHandler {
     /** Менеджер сервисов для доступа к данным */
     private final ServiceManager services;
-
     /** Помощник для чтения ввода */
     private final InputHelper input;
-
-    /** Хранилище для сохранения в файл */
-    private final FileStorage storage;
-
-    /** Флаг работы программы */
     private boolean running;
 
     /**
@@ -39,16 +27,9 @@ public class CommandHandler {
     public CommandHandler() {
         this.services = new ServiceManager();
         this.input = new InputHelper(new BufferedReader(new InputStreamReader(System.in)));
-        this.storage = new FileStorage();
         this.running = true;
 
-        try {
-            storage.load(services);
-        } catch (StorageException e) {
-            System.out.println("Предупреждение: " + e.getMessage());
-        }
     }
-
     /**
      * Запускает основной цикл обработки команд.
      */
@@ -58,13 +39,17 @@ public class CommandHandler {
 
         while (running) {
             try {
-                System.out.print("> ");
                 String line = input.readString("", false);
                 if (line.isEmpty()) continue;
 
                 String[] parts = line.split("\\s+", 2);
                 String command = parts[0].toLowerCase();
-                String args = parts.length > 1 ? parts[1] : "";
+                String args;
+                if (parts.length > 1) {
+                    args = parts[1];
+                } else {
+                    args = "";
+                }
 
                 switch (command) {
                     case "help":
@@ -103,20 +88,13 @@ public class CommandHandler {
                     case "stock_report":
                         stockReport(args);
                         break;
-                    case "clear_data":
-                        clearData();
-                        break;
-                    case "save":
-                        save();
-                        break;
                     default:
                         System.out.println("Неизвестная команда. Введите help");
                 }
             } catch (ValidationException e) {
                 System.out.println("Ошибка: " + e.getMessage());
-            } catch (StorageException e) {
-                System.out.println("Ошибка сохранения: " + e.getMessage());
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
             }
         }
@@ -137,8 +115,6 @@ public class CommandHandler {
         System.out.println("  batch_update <ID> поле=значение... - обновить партию");
         System.out.println("  batch_archive <ID>      - архивировать партию");
         System.out.println("  stock_report [--exp-before ДАТА] - отчет по складу");
-        System.out.println("  clear_data              - удалить все данные");
-        System.out.println("  save                    - сохранить в файл");
         System.out.println("  help                    - показать эту справку");
         System.out.println("  exit                    - выход из программы\n");
     }
@@ -146,23 +122,12 @@ public class CommandHandler {
     /**
      * Завершает работу программы с сохранением данных.
      */
-    private void exit() throws StorageException {
-        save();
+    private void exit()  {
         System.out.println("До свидания!");
         running = false;
     }
-
-    /**
-     * Сохраняет данные в файл.
-     */
-    private void save() throws StorageException {
-        storage.save(services);
-        System.out.println("Данные сохранены");
-    }
-
     /**
      * Добавляет новый реактив.
-     * Запрашивает все поля интерактивно.
      */
     private void addReagent() throws Exception {
         Reagent r = new Reagent();
@@ -178,8 +143,6 @@ public class CommandHandler {
 
     /**
      * Показывает список реактивов.
-     *
-     * @param args аргументы команды, может содержать --q для поиска
      */
     private void listReagents(String args) {
         String query = null;
@@ -209,10 +172,8 @@ public class CommandHandler {
                     truncate(r.getCas(), 15));
         }
     }
-
     /**
      * Добавляет новую партию.
-     * Запрашивает все поля интерактивно.
      */
     private void addBatch() throws Exception {
         if (services.getReagentService().isEmpty()) {
@@ -221,7 +182,7 @@ public class CommandHandler {
         }
 
         long reagentId = input.readLong("ID реактива: ");
-        if (!services.getReagentService().exists(reagentId)) {
+        if (!services.getReagentService().exist(reagentId)) {
             System.out.println("Реактив не найден");
             return;
         }
@@ -240,9 +201,19 @@ public class CommandHandler {
         if (expires != null) {
             b.setExpiresAt(expires.atStartOfDay(ZoneOffset.UTC).toInstant());
         }
-
-        int statusChoice = input.readChoice("Статус (1-ACTIVE, 2-ARCHIVED): ", 1, 2);
-        b.setStatus(statusChoice == 1 ? BatchStatus.ACTIVE : BatchStatus.ARCHIVED);
+        int statusChoice;
+        while (true) {
+            statusChoice = input.readInt("Статус (1-ACTIVE, 2-ARCHIVED): ");
+            if (statusChoice == 1 || statusChoice == 2) {
+                break;
+            }
+            System.out.println("Ошибка: введите 1 или 2");
+        }
+        if (statusChoice == 1) {
+            b.setStatus(BatchStatus.ACTIVE);
+        } else {
+            b.setStatus(BatchStatus.ARCHIVED);
+        }
 
         b.setOwnerUsername(input.readString("Владелец: ", true));
 
@@ -252,8 +223,6 @@ public class CommandHandler {
 
     /**
      * Показывает список партий.
-     *
-     * @param args может содержать ID реактива для фильтрации
      */
     private void listBatches(String args) throws Exception {
         List<ReagentBatch> batches;
@@ -288,8 +257,6 @@ public class CommandHandler {
 
     /**
      * Показывает подробную информацию о партии.
-     *
-     * @param args ID партии
      */
     private void showBatch(String args) {
         if (args.trim().isEmpty()) {
@@ -333,15 +300,12 @@ public class CommandHandler {
 
     /**
      * Добавляет движение по партии.
-     *
-     * @param args ID партии
      */
     private void addMove(String args) throws Exception {
         if (args.trim().isEmpty()) {
             System.out.println("Использование: move_add <ID>");
             return;
         }
-
         long batchId;
         try {
             batchId = Long.parseLong(args.trim());
@@ -367,7 +331,16 @@ public class CommandHandler {
         move.setBatchId(batchId);
         move.setUnit(batch.getUnit());
 
-        int typeChoice = input.readChoice("Тип (1-IN, 2-OUT, 3-DISCARD): ", 1, 3);
+        int typeChoice;
+        while (true) {
+            typeChoice = input.readInt("Тип (1-IN, 2-OUT, 3-DISCARD): ");
+            if (typeChoice >= 1 && typeChoice <= 3) {
+                break;
+            } else {
+                System.out.println("Ошибка: введите число от 1 до 3");
+            }
+        }
+
         switch (typeChoice) {
             case 1: move.setType(StockMoveType.IN); break;
             case 2: move.setType(StockMoveType.OUT); break;
@@ -399,8 +372,6 @@ public class CommandHandler {
 
     /**
      * Показывает историю движений.
-     *
-     * @param args ID партии и опционально --last N
      */
     private void listMoves(String args) throws Exception {
         if (args.trim().isEmpty()) {
@@ -464,8 +435,6 @@ public class CommandHandler {
 
     /**
      * Обновляет поля партии.
-     *
-     * @param args ID партии и поля в формате поле=значение
      */
     private void updateBatch(String args) throws Exception {
         if (args.trim().isEmpty()) {
@@ -536,8 +505,6 @@ public class CommandHandler {
 
     /**
      * Архивирует партию.
-     *
-     * @param args ID партии
      */
     private void archiveBatch(String args) throws Exception {
         if (args.trim().isEmpty()) {
@@ -558,15 +525,8 @@ public class CommandHandler {
                 System.out.println("Партия уже в архиве");
                 return;
             }
-
-            System.out.println("Партия: " + batch.getLabel());
-            System.out.println("Остаток: " + batch.getQuantityCurrent() + " " + batch.getUnit());
-
-            if (input.confirm("Архивировать?")) {
-                services.getBatchService().archive(id);
-                System.out.println("Партия архивирована");
-            }
-
+            services.getBatchService().archive(id);
+            System.out.println("Партия архивирована");
         } catch (NumberFormatException e) {
             System.out.println("Ошибка: ID должен быть числом");
         }
@@ -574,8 +534,6 @@ public class CommandHandler {
 
     /**
      * Формирует отчет по складу.
-     *
-     * @param args может содержать --expires-before ДАТА
      */
     private void stockReport(String args) {
         LocalDate expiresBefore = null;
@@ -624,21 +582,7 @@ public class CommandHandler {
     }
 
     /**
-     * Очищает все данные.
-     */
-    private void clearData() throws Exception {
-        if (input.confirm("Удалить ВСЕ данные?")) {
-            services.clearAll();
-            System.out.println("Все данные удалены");
-        }
-    }
-
-    /**
      * Обрезает строку до указанной длины.
-     *
-     * @param s строка
-     * @param max максимальная длина
-     * @return обрезанная строка
      */
     private String truncate(String s, int max) {
         if (s == null) return "";

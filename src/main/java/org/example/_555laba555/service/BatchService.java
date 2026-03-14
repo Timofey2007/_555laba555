@@ -13,26 +13,17 @@ import java.util.Map;
 /**
  * Сервис для управления коллекцией партий реактивов.
  * Отвечает за добавление, поиск, обновление и архивацию партий.
- * Хранит данные в HashMap (вариант 2 из задания).
- *
- * @author Студент
- * @version 1.0
+ * Хранит данные в HashMap
  */
 public class BatchService {
     /** Хранилище партий: ключ - ID, значение - объект ReagentBatch */
     private Map<Long, ReagentBatch> items = new HashMap<>();
 
-    /** Следующий доступный ID для новой партии */
     private long nextId = 1;
 
     /**
      * Добавляет новую партию в коллекцию.
      * Генерирует ID, устанавливает даты создания и обновления,
-     * выполняет валидацию перед сохранением.
-     *
-     * @param batch партия для добавления
-     * @return добавленная партия с установленным ID
-     * @throws ValidationException если данные не прошли валидацию
      */
     public ReagentBatch add(ReagentBatch batch) {
         batch.setId(nextId++);
@@ -47,9 +38,6 @@ public class BatchService {
 
     /**
      * Возвращает партию по ее ID.
-     *
-     * @param id идентификатор партии
-     * @return партия или null, если не найдена
      */
     public ReagentBatch getById(long id) {
         return items.get(id);
@@ -57,8 +45,6 @@ public class BatchService {
 
     /**
      * Возвращает список всех партий.
-     *
-     * @return список всех партий
      */
     public List<ReagentBatch> getAll() {
         return new ArrayList<>(items.values());
@@ -66,9 +52,6 @@ public class BatchService {
 
     /**
      * Возвращает список партий, относящихся к указанному реактиву.
-     *
-     * @param reagentId ID реактива
-     * @return список партий для данного реактива
      */
     public List<ReagentBatch> getByReagentId(long reagentId) {
         List<ReagentBatch> result = new ArrayList<>();
@@ -79,27 +62,8 @@ public class BatchService {
         }
         return result;
     }
-
-    /**
-     * Возвращает список только активных партий.
-     *
-     * @return список партий со статусом ACTIVE
-     */
-    public List<ReagentBatch> getActive() {
-        List<ReagentBatch> result = new ArrayList<>();
-        for (ReagentBatch b : items.values()) {
-            if (b.getStatus() == BatchStatus.ACTIVE) {
-                result.add(b);
-            }
-        }
-        return result;
-    }
-
     /**
      * Обновляет существующую партию.
-     *
-     * @param batch партия с обновленными данными
-     * @throws ValidationException если партия не найдена или данные невалидны
      */
     public void update(ReagentBatch batch) {
         if (!items.containsKey(batch.getId())) {
@@ -112,9 +76,6 @@ public class BatchService {
 
     /**
      * Архивирует партию (меняет статус на ARCHIVED).
-     *
-     * @param id идентификатор партии
-     * @throws ValidationException если партия не найдена или уже в архиве
      */
     public void archive(long id) {
         ReagentBatch batch = items.get(id);
@@ -130,36 +91,8 @@ public class BatchService {
 
     /**
      * Проверяет, существует ли партия с указанным ID.
-     *
-     * @param id проверяемый идентификатор
-     * @return true если партия существует
      */
     public boolean exists(long id) {
         return items.containsKey(id);
-    }
-
-    /**
-     * Загружает партии из списка (используется при чтении из файла).
-     * Очищает текущую коллекцию и заполняет новыми данными.
-     *
-     * @param list список партий для загрузки
-     */
-    public void loadFromList(List<ReagentBatch> list) {
-        items.clear();
-        for (ReagentBatch b : list) {
-            items.put(b.getId(), b);
-            if (b.getId() >= nextId) {
-                nextId = b.getId() + 1;
-            }
-        }
-    }
-
-    /**
-     * Возвращает список всех партий для сохранения в файл.
-     *
-     * @return список партий
-     */
-    public List<ReagentBatch> getList() {
-        return new ArrayList<>(items.values());
     }
 }

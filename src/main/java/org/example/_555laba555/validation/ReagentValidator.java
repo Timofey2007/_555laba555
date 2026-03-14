@@ -5,29 +5,19 @@ import org.example._555laba555.domain.Reagent;
 /**
  * Проверяет корректность данных реактива перед сохранением.
  * Выполняет все проверки, описанные в задании: пустые значения, длину строк.
- *
- * @author Студент
- * @version 1.0
  */
 public class ReagentValidator {
-    /** Максимальная длина названия реактива */
     public static final int MAX_NAME_LENGTH = 128;
 
-    /** Максимальная длина химической формулы */
     public static final int MAX_FORMULA_LENGTH = 32;
 
-    /** Максимальная длина CAS номера */
     public static final int MAX_CAS_LENGTH = 32;
 
-    /** Максимальная длина класса опасности */
     public static final int MAX_HAZARD_LENGTH = 32;
 
     /**
      * Проверяет реактив на соответствие всем требованиям.
      * Если данные некорректны, выбрасывает ValidationException.
-     *
-     * @param reagent проверяемый реактив
-     * @throws ValidationException если данные не проходят проверку
      */
     public static void validate(Reagent reagent) {
         if (reagent == null) {
