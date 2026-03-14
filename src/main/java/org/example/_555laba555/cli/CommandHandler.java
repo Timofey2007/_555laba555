@@ -305,7 +305,7 @@ public class CommandHandler {
         if (args.trim().isEmpty()) {
             System.out.println("Использование: move_add <ID>");
             return;
-        }
+        } //stream
         long batchId;
         try {
             batchId = Long.parseLong(args.trim());
