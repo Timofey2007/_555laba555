@@ -2,7 +2,7 @@ package org.example._555laba555.service;
 
 import org.example._555laba555.domain.StockMove;
 import org.example._555laba555.validation.MoveValidator;
-import org.example._555laba555.validation.ValidationException;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,5 +68,26 @@ public class MoveService {
             return all.subList(0, limit);
         }
         return all;
+    }
+
+    public ArrayList<StockMove> getAll() {
+        return new ArrayList<>(items.values());
+    }
+
+    /**
+     * Загружает движения из списка (используется при чтении файла).
+     * Очищает текущую коллекцию и заполняет новой.
+     *
+     * @param list список движений для загрузки
+     */
+    public void loadFromList(List<StockMove> list) {
+        items.clear();  // очищаем старые данные
+        for (StockMove m : list) {
+            items.put(m.getId(), m);
+            // обновляем счетчик ID, чтобы новые объекты не пересекались
+            if (m.getId() >= nextId) {
+                nextId = m.getId() + 1;
+            }
+        }
     }
 }

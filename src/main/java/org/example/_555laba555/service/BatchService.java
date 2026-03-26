@@ -95,4 +95,21 @@ public class BatchService {
     public boolean exists(long id) {
         return items.containsKey(id);
     }
+
+    /**
+     * Загружает партии из списка (используется при чтении файла).
+     * Очищает текущую коллекцию и заполняет новой.
+     *
+     * @param list список партий для загрузки
+     */
+    public void loadFromList(List<ReagentBatch> list) {
+        items.clear();  // очищаем старые данные
+        for (ReagentBatch b : list) {
+            items.put(b.getId(), b);
+            // обновляем счетчик ID, чтобы новые объекты не пересекались
+            if (b.getId() >= nextId) {
+                nextId = b.getId() + 1;
+            }
+        }
+    }
 }

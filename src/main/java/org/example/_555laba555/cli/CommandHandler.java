@@ -8,7 +8,10 @@ import java.io.InputStreamReader;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 /**
  * Основной обработчик команд пользователя.
@@ -20,6 +23,7 @@ public class CommandHandler {
     /** Помощник для чтения ввода */
     private final InputHelper input;
     private boolean running;
+    private final Map<String, Command> commands = new HashMap<>();
 
     /**
      * Создает обработчик команд и загружает данные из файла.
@@ -28,7 +32,26 @@ public class CommandHandler {
         this.services = new ServiceManager();
         this.input = new InputHelper(new BufferedReader(new InputStreamReader(System.in)));
         this.running = true;
+        commHashPut();
 
+    }
+
+    /**
+     * Сюда можно добавлять новые команды и все существующие здесь хранятся соответственно
+     */
+    public void commHashPut(){
+        commands.put("help", args -> showHelp());
+        commands.put("exit", args -> exit());
+        commands.put("reag_add", args -> addReagent());
+        commands.put("reag_list", args -> listReagents(args));
+        commands.put("batch_add", args -> addBatch());
+        commands.put("batch_list", args -> listBatches(args));
+        commands.put("batch_show", args -> showBatch(args));
+        commands.put("move_add", args -> addMove(args));
+        commands.put("move_list", args -> listMoves(args));
+        commands.put("batch_update", args -> updateBatch(args));
+        commands.put("batch_archive", args -> archiveBatch(args));
+        commands.put("stock_report", args -> stockReport(args));
     }
     /**
      * Запускает основной цикл обработки команд.
@@ -38,63 +61,26 @@ public class CommandHandler {
         System.out.println("Введите help для списка команд");
 
         while (running) {
+
             try {
+                System.out.print("> ");
                 String line = input.readString("", false);
                 if (line.isEmpty()) continue;
 
                 String[] parts = line.split("\\s+", 2);
-                String command = parts[0].toLowerCase();
-                String args;
-                if (parts.length > 1) {
-                    args = parts[1];
+                String commandName = parts[0].toLowerCase();
+                String args = parts.length > 1 ? parts[1] : "";
+
+                Command cmd = commands.get(commandName);
+                if (cmd != null) {
+                    cmd.justDOIT(args); //используем функциональный интерфейс и вызываем метод связанный с введенным аргументом
                 } else {
-                    args = "";
+                    System.out.println("Неизвестная команда. Введите help");
                 }
 
-                switch (command) {
-                    case "help":
-                        showHelp();
-                        break;
-                    case "exit":
-                        exit();
-                        break;
-                    case "reag_add":
-                        addReagent();
-                        break;
-                    case "reag_list":
-                        listReagents(args);
-                        break;
-                    case "batch_add":
-                        addBatch();
-                        break;
-                    case "batch_list":
-                        listBatches(args);
-                        break;
-                    case "batch_show":
-                        showBatch(args);
-                        break;
-                    case "move_add":
-                        addMove(args);
-                        break;
-                    case "move_list":
-                        listMoves(args);
-                        break;
-                    case "batch_update":
-                        updateBatch(args);
-                        break;
-                    case "batch_archive":
-                        archiveBatch(args);
-                        break;
-                    case "stock_report":
-                        stockReport(args);
-                        break;
-                    default:
-                        System.out.println("Неизвестная команда. Введите help");
-                }
             } catch (ValidationException e) {
                 System.out.println("Ошибка: " + e.getMessage());
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
             }
         }
@@ -132,13 +118,14 @@ public class CommandHandler {
     private void addReagent() throws Exception {
         Reagent r = new Reagent();
         r.setName(input.readString("Название: ", true));
-        r.setFormula(input.readOptional("Формула: "));
+        r.setFormula(input.readString("Формула: ", true));
         r.setCas(input.readOptional("CAS: "));
         r.setHazardClass(input.readOptional("Класс опасности: "));
         r.setOwnerUsername(input.readString("Владелец: ", true));
 
         services.getReagentService().add(r);
         System.out.println("Реактив добавлен. ID: " + r.getId());
+
     }
 
     /**
@@ -305,7 +292,7 @@ public class CommandHandler {
         if (args.trim().isEmpty()) {
             System.out.println("Использование: move_add <ID>");
             return;
-        } //stream
+        }
         long batchId;
         try {
             batchId = Long.parseLong(args.trim());
@@ -531,7 +518,7 @@ public class CommandHandler {
             System.out.println("Ошибка: ID должен быть числом");
         }
     }
-
+    //TODO дата не должна быть меньше чем now()
     /**
      * Формирует отчет по складу.
      */

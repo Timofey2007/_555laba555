@@ -67,7 +67,6 @@ public final class Reagent {
         this.updatedAt = updatedAt;
     }
 
-    //TODO прописать очев javadoc
     public long getId() {
         return id;
     }

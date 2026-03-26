@@ -1,6 +1,5 @@
 package org.example._555laba555.service;
 
-import java.util.ArrayList;
 
 /**
  * Менеджер сервисов - объединяет все сервисы в одном месте.
