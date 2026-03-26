@@ -1,4 +1,4 @@
-package org.example._555laba555.storage;
+package org.example._555laba555.fileManager;
 
 /**
  * Исключение, которое выбрасывается при ошибках работы с хранилищем данных.
