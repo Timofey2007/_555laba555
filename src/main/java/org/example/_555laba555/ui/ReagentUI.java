@@ -1,6 +1,7 @@
 package org.example._555laba555.ui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -13,59 +14,83 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example._555laba555.domain.*;
 import org.example._555laba555.service.ServiceManager;
+import org.example._555laba555.fileManager.Conservation;
+import org.example._555laba555.fileManager.StorageException;
 
 
 /**
- * JavaFX интерфейс в стиле Master-Detail для управления реактивами.
- * Левая панель: список всех реактивов
- * Правая панель: детальная информация о выбранном реактиве
+ * JavaFX интерфейс для управления реактивами.
+ * Поддерживает передачу сервисов и хранилища из Main.
  */
 public class ReagentUI extends Application {
 
+    private static ServiceManager sharedServices;
+    private static Conservation sharedStorage;
     private ServiceManager services;
+    private Conservation storage;
+    private String dataFile;
+
     private ListView<Reagent> reagentListView;
     private TextArea detailArea;
     private Label statusLabel;
 
+    /**
+     * Запуск JavaFX приложения с передачей параметров.
+     */
+    public static void launch(Class<?> clazz, ServiceManager services, Conservation storage, String dataFile) {
+        // Передаем параметры через статические поля или через конструктор
+        // Используем статический метод для передачи данных перед запуском
+        Platform.runLater(() -> {
+            try {
+                ReagentUI app = (ReagentUI) clazz.getDeclaredConstructor().newInstance();
+                app.services = services;
+                app.storage = storage;
+                app.dataFile = dataFile;
+                Stage stage = new Stage();
+                app.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     @Override
     public void start(Stage primaryStage) {
-        services = new ServiceManager();
+        // Если сервисы не переданы (запуск напрямую), создаем новые
+        if (services == null) {
+            services = new ServiceManager();
+            storage = new Conservation("lab5_data.csv");
+            dataFile = "lab5_data.csv";
+            try {
+                storage.load(services);
+            } catch (StorageException e) {
+                System.out.println("Предупреждение: " + e.getMessage());
+            }
+        }
 
-        // Главный контейнер
         BorderPane root = new BorderPane();
-
-        // Верхняя панель с кнопками
         root.setTop(createTopPanel());
-
-        // Центральная панель (Master-Detail)
         root.setCenter(createMasterDetailPanel());
-
-        // Нижняя панель со статусом
         root.setBottom(createStatusPanel());
 
-        // Создаем сцену
         Scene scene = new Scene(root, 900, 600);
-        primaryStage.setTitle("Учет реактивов - Master-Detail");
+        primaryStage.setTitle("Учет реактивов");
         primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest(e -> saveOnExit());
         primaryStage.show();
 
-        // Загружаем данные
         refreshData();
     }
 
-    /**
-     * Верхняя панель с кнопками управления.
-     */
     private HBox createTopPanel() {
         HBox topPanel = new HBox(10);
         topPanel.setPadding(new Insets(10));
         topPanel.setStyle("-fx-background-color: #f0f0f0;");
 
-        Button refreshBtn = new Button("Обновить (Refresh)");
+        Button refreshBtn = new Button("Обновить");
         refreshBtn.setOnAction(e -> refreshData());
-        refreshBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
 
-        Button addBtn = new Button("Добавить реактив");
+        Button addBtn = new Button("Добавить");
         addBtn.setOnAction(e -> showAddReagentDialog());
 
         Button editBtn = new Button("Редактировать");
@@ -74,36 +99,30 @@ public class ReagentUI extends Application {
         Button deleteBtn = new Button("Удалить");
         deleteBtn.setOnAction(e -> deleteSelectedReagent());
 
-        Button batchBtn = new Button("Показать партии");
-        batchBtn.setOnAction(e -> showBatchesForSelected());
+        Button saveBtn = new Button("Сохранить");
+        saveBtn.setOnAction(e -> saveData());
 
-        topPanel.getChildren().addAll(refreshBtn, addBtn, editBtn, deleteBtn, batchBtn);
-
+        topPanel.getChildren().addAll(refreshBtn, addBtn, editBtn, deleteBtn, saveBtn);
         return topPanel;
     }
 
-    /**
-     * Центральная панель: слева список, справа детали.
-     */
     private SplitPane createMasterDetailPanel() {
         SplitPane splitPane = new SplitPane();
 
-        // Левая панель - список реактивов
         VBox leftPanel = new VBox(5);
         leftPanel.setPadding(new Insets(10));
+        leftPanel.setPrefWidth(300);
 
         Label leftTitle = new Label("Список реактивов");
         leftTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
         reagentListView = new ListView<>();
-        reagentListView.setPrefWidth(300);
         reagentListView.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldVal, newVal) -> showReagentDetails(newVal)
         );
 
         leftPanel.getChildren().addAll(leftTitle, reagentListView);
 
-        // Правая панель - детальная информация
         VBox rightPanel = new VBox(10);
         rightPanel.setPadding(new Insets(10));
         rightPanel.setPrefWidth(500);
@@ -124,9 +143,6 @@ public class ReagentUI extends Application {
         return splitPane;
     }
 
-    /**
-     * Нижняя панель со статусом.
-     */
     private HBox createStatusPanel() {
         HBox bottomPanel = new HBox(10);
         bottomPanel.setPadding(new Insets(5, 10, 5, 10));
@@ -138,9 +154,6 @@ public class ReagentUI extends Application {
         return bottomPanel;
     }
 
-    /**
-     * Обновляет данные из сервисов и перерисовывает список.
-     */
     private void refreshData() {
         try {
             ObservableList<Reagent> reagents = FXCollections.observableArrayList(
@@ -154,13 +167,10 @@ public class ReagentUI extends Application {
 
             statusLabel.setText("Загружено: " + reagents.size() + " реактивов");
         } catch (Exception e) {
-            statusLabel.setText("Ошибка загрузки: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
-    /**
-     * Показывает детальную информацию о выбранном реактиве.
-     */
     private void showReagentDetails(Reagent reagent) {
         if (reagent == null) {
             detailArea.clear();
@@ -175,49 +185,13 @@ public class ReagentUI extends Application {
         sb.append("ID: ").append(reagent.getId()).append("\n");
         sb.append("Название: ").append(valueOrEmpty(reagent.getName())).append("\n");
         sb.append("Формула: ").append(valueOrEmpty(reagent.getFormula())).append("\n");
-        sb.append("CAS номер: ").append(valueOrEmpty(reagent.getCas())).append("\n");
+        sb.append("CAS: ").append(valueOrEmpty(reagent.getCas())).append("\n");
         sb.append("Класс опасности: ").append(valueOrEmpty(reagent.getHazardClass())).append("\n");
         sb.append("Владелец: ").append(valueOrEmpty(reagent.getOwnerUsername())).append("\n");
-
-        if (reagent.getCreatedAt() != null) {
-            sb.append("Создан: ").append(reagent.getCreatedAt()).append("\n");
-        }
-        if (reagent.getUpdatedAt() != null) {
-            sb.append("Обновлен: ").append(reagent.getUpdatedAt()).append("\n");
-        }
-
-        // Показываем партии для этого реактива
-        sb.append("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-        sb.append("              ПАРТИИ РЕАКТИВА\n");
-        sb.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-        boolean hasBatches = false;
-        for (ReagentBatch b : services.getBatchService().getAll()) {
-            if (b.getReagentId() == reagent.getId()) {
-                hasBatches = true;
-                sb.append("\nID: ").append(b.getId());
-                sb.append("\n  Метка: ").append(b.getLabel());
-                sb.append("\n  Количество: ").append(b.getQuantityCurrent())
-                        .append(" ").append(b.getUnit());
-                sb.append("\n  Место: ").append(b.getLocation());
-                sb.append("\n  Статус: ").append(b.getStatus());
-                if (b.getExpiresAt() != null) {
-                    sb.append("\n  Срок годности: ").append(b.getExpiresAt());
-                }
-                sb.append("\n");
-            }
-        }
-
-        if (!hasBatches) {
-            sb.append("\nНет партий для этого реактива.\n");
-        }
 
         detailArea.setText(sb.toString());
     }
 
-    /**
-     * Диалог добавления нового реактива.
-     */
     private void showAddReagentDialog() {
         Stage dialog = new Stage();
         dialog.setTitle("Добавить реактив");
@@ -272,6 +246,7 @@ public class ReagentUI extends Application {
                 refreshData();
                 dialog.close();
                 statusLabel.setText("Реактив добавлен");
+                saveData();
 
             } catch (Exception ex) {
                 showAlert("Ошибка", ex.getMessage());
@@ -285,13 +260,10 @@ public class ReagentUI extends Application {
         dialog.show();
     }
 
-    /**
-     * Диалог редактирования выбранного реактива.
-     */
     private void showEditReagentDialog() {
         Reagent selected = reagentListView.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("Ошибка", "Выберите реактив для редактирования");
+            showAlert("Ошибка", "Выберите реактив");
             return;
         }
 
@@ -343,6 +315,7 @@ public class ReagentUI extends Application {
                 refreshData();
                 dialog.close();
                 statusLabel.setText("Реактив обновлен");
+                saveData();
 
             } catch (Exception ex) {
                 showAlert("Ошибка", ex.getMessage());
@@ -356,21 +329,17 @@ public class ReagentUI extends Application {
         dialog.show();
     }
 
-    /**
-     * Удаляет выбранный реактив.
-     */
     private void deleteSelectedReagent() {
         Reagent selected = reagentListView.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("Ошибка", "Выберите реактив для удаления");
+            showAlert("Ошибка", "Выберите реактив");
             return;
         }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Подтверждение");
         confirm.setHeaderText("Удалить реактив?");
-        confirm.setContentText("Вы уверены, что хотите удалить реактив \"" +
-                selected.getName() + "\"?");
+        confirm.setContentText("Вы уверены?");
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -378,6 +347,7 @@ public class ReagentUI extends Application {
                     services.getReagentService().remove(selected.getId());
                     refreshData();
                     statusLabel.setText("Реактив удален");
+                    saveData();
                 } catch (Exception e) {
                     showAlert("Ошибка", e.getMessage());
                 }
@@ -385,53 +355,23 @@ public class ReagentUI extends Application {
         });
     }
 
-    /**
-     * Показывает партии для выбранного реактива.
-     */
-    private void showBatchesForSelected() {
-        Reagent selected = reagentListView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Ошибка", "Выберите реактив");
-            return;
+    private void saveData() {
+        try {
+            storage.save(services);
+            statusLabel.setText("Данные сохранены в " + dataFile);
+        } catch (StorageException e) {
+            statusLabel.setText("Ошибка сохранения: " + e.getMessage());
         }
-
-        Stage dialog = new Stage();
-        dialog.setTitle("Партии для " + selected.getName());
-
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
-
-        ListView<ReagentBatch> batchListView = new ListView<>();
-
-        ObservableList<ReagentBatch> batches = FXCollections.observableArrayList(
-                services.getBatchService().getByReagentId(selected.getId())
-        );
-        batchListView.setItems(batches);
-
-        batchListView.setCellFactory(lv -> new ListCell<ReagentBatch>() {
-            @Override
-            protected void updateItem(ReagentBatch b, boolean empty) {
-                super.updateItem(b, empty);
-                if (empty || b == null) {
-                    setText(null);
-                } else {
-                    setText(b.getLabel() + " | " + b.getQuantityCurrent() +
-                            " " + b.getUnit() + " | " + b.getLocation());
-                }
-            }
-        });
-
-        Label info = new Label("Всего партий: " + batches.size());
-        vbox.getChildren().addAll(info, batchListView);
-
-        Scene scene = new Scene(vbox, 500, 400);
-        dialog.setScene(scene);
-        dialog.show();
     }
 
-    /**
-     * Показывает всплывающее сообщение об ошибке.
-     */
+    private void saveOnExit() {
+        try {
+            storage.save(services);
+        } catch (StorageException e) {
+            System.err.println("Ошибка сохранения при выходе: " + e.getMessage());
+        }
+    }
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -440,15 +380,22 @@ public class ReagentUI extends Application {
         alert.showAndWait();
     }
 
-    /**
-     * Преобразует null в пустую строку.
-     */
     private String valueOrEmpty(String s) {
         return s == null ? "" : s;
     }
-
     /**
-     * Точка входа в JavaFX приложение.
+     * Статический метод для передачи данных из консоли в UI.
+     * Вызывается из CommandHandler перед запуском UI.
+     *
+     * @param services сервисы с данными
+     * @param storage хранилище для сохранения
+     */
+    public static void setServicesAndStorage(ServiceManager services, Conservation storage) {
+        sharedServices = services;
+        sharedStorage = storage;
+    }
+    /**
+     * Точка входа для запуска UI.
      */
     public static void main(String[] args) {
         launch(args);
