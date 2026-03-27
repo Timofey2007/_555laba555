@@ -12,10 +12,8 @@ import java.util.List;
 
 /**
  * Класс для сохранения и загрузки данных в CSV файл.
- * <p>
  * Использует библиотеку OpenCSV для работы с CSV форматом.
  * Данные сохраняются в три секции: REAGENTS, BATCHES, MOVES.
- * </p>
  *
  */
 public class Conservation {
