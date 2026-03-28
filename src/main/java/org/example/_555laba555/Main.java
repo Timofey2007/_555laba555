@@ -46,7 +46,6 @@ public class Main {
                 System.out.println("Запуск графического интерфейса...");
                 ReagentUI.launch(ReagentUI.class, services, storage, dataFile);
                 break;
-            case "cli":
             default:
                 // Запуск консольного интерфейса
                 System.out.println("Запуск консольного интерфейса...");
@@ -68,18 +67,15 @@ public class Main {
      * Парсит режим запуска из аргументов.
      *
      * @param args аргументы командной строки
-     * @return "ui" для графического режима, "cli" для консольного
+     * @return "ui" для графического режима,
      */
     private static String parseMode(String[] args) {
         for (String arg : args) {
             if (arg.equals("--ui")) {
                 return "ui";
             }
-            if (arg.equals("--cli")) {
-                return "cli";
-            }
         }
-        return "cli"; // по умолчанию консольный режим
+        return "";
     }
 
     /**

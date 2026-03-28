@@ -56,13 +56,13 @@ public class MoveService {
      * Возвращает список последних движений для указанной партии.
      * Движения сортируются от новых к старым.
      */
-    public List<StockMove> getByBatchId(long batchId, int limit) {
+    public List<StockMove> getByBatchId(long batchId, int limit) { // любой элемент типа Comparator или лямбда выражение
         List<StockMove> all = getByBatchId(batchId);
-        all.sort((a, b) -> {
+        all.sort( (a, b) -> { //
             if (a.getMovedAt() == null) return 1;
             if (b.getMovedAt() == null) return -1;
             return b.getMovedAt().compareTo(a.getMovedAt());
-        });
+        } );
 
         if (limit < all.size()) {
             return all.subList(0, limit);

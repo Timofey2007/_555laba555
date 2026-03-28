@@ -343,4 +343,5 @@ public class Conservation {
     private String emptyToNull(String s) {
         return (s == null || s.isEmpty()) ? null : s;
     }
+
 }
