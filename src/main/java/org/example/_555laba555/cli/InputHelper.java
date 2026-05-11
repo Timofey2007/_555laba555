@@ -26,8 +26,7 @@ public class InputHelper {
         }
         String trimmed = line.trim();
         if (required && trimmed.isEmpty()) {
-            System.out.println("Ошибка: значение не может быть пустым");
-            return readString(prompt, required);
+            return readString(prompt, required); //проверяет на пустоту
         }
         return trimmed;
     }

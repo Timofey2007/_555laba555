@@ -25,7 +25,6 @@ public class CommandHandler {
         this.running = true;
         initCommands();
     }
-
     private void initCommands() {
         commands.put("help", new HelpCommand());
         commands.put("exit", new ExitCommand());
@@ -42,6 +41,16 @@ public class CommandHandler {
         commands.put("save", new SaveCommand());
         commands.put("load", new LoadCommand());
         commands.put("ui", new UiCommand());
+        commands.put("move_del", new MoveDelete());
+        commands.put("reag_del", new ReagentDelete());
+        commands.put("batch_del", new BatchDelete());
+        commands.put("history_show", new HistoryShow());
+        commands.put("cancel_del", new DeletingOfDeleting());
+
+
+
+
+
     }
 
     public void run() {

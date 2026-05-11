@@ -11,13 +11,7 @@ public class ExitCommand implements Command {
     @Override
     public void justDOIT(ServiceManager services, InputHelper input,
                          Conservation storage, String args) throws Exception {
-        try {
-            storage.save(services);
-            System.out.println("Данные сохранены");
-        } catch (StorageException e) {
-            System.out.println("Ошибка сохранения: " + e.getMessage());
-        }
-        System.out.println("До свидания!");
+        storage.save(services);
         System.exit(0);
     }
 }

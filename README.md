@@ -26,3 +26,4 @@ gradle build
 
 # запуск
 java -jar build/libs/555laba555.jar
+перейдя в соответсвующую дирректорию 

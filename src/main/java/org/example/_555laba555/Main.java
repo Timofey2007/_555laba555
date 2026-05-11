@@ -1,19 +1,17 @@
 package org.example._555laba555;
 
 import org.example._555laba555.cli.CommandHandler;
-import org.example._555laba555.ui.ReagentUI;
 import org.example._555laba555.fileManager.Conservation;
 import org.example._555laba555.service.ServiceManager;
 
 /**
  * Главный класс приложения.
  * При запуске программа проверяет аргументы командной строки:
- * --ui  - запуск графического интерфейса JavaFX
  */
 public class Main {
 
     /** Имя файла для сохранения данных по умолчанию */
-    private static final String DEFAULT_DATA_FILE = "lab5_data.csv";
+    private static final String DEFAULT_DATA_FILE = "records.csv";
 
     /**
      * Точка входа в программу.
@@ -35,24 +33,14 @@ public class Main {
             storage.load(services);
             System.out.println("Данные загружены из: " + dataFile);
         } catch (Exception e) {
-            System.out.println("Предупреждение: не удалось загрузить данные - " + e.getMessage());
             System.out.println("Начинаем с пустыми данными");
         }
 
-        // Запускаем выбранный режим
-        switch (mode) {
-            case "ui":
-                // Запуск графического интерфейса JavaFX
-                System.out.println("Запуск графического интерфейса...");
-                ReagentUI.launch(ReagentUI.class, services, storage, dataFile);
-                break;
-            default:
-                // Запуск консольного интерфейса
+
                 System.out.println("Запуск консольного интерфейса...");
                 CommandHandler handler = new CommandHandler(services, storage);
                 handler.run();
-                break;
-        }
+
 
         // Сохраняем данные перед выходом (на всякий случай)
         try {

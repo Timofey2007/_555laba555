@@ -10,18 +10,11 @@ public class LoadCommand implements Command {
 
     @Override
     public void justDOIT(ServiceManager services, InputHelper input,
-                         Conservation storage, String args) throws Exception {
-        try {
-            if (args.trim().isEmpty()) {
-                storage.load(services);
-                System.out.println("Данные загружены");
-            } else {
-                Conservation customStorage = new Conservation(args.trim());
-                customStorage.load(services);
-                System.out.println("Данные загружены из: " + args);
-            }
-        } catch (StorageException e) {
-            System.out.println("Ошибка загрузки: " + e.getMessage());
-        }
+                         Conservation storage, String args) throws StorageException  {
+        String wayToPath = args.trim().isEmpty() ? storage.getCsvFile() : args.trim(); //загрузили отсюда
+        Conservation needed = new Conservation(wayToPath);
+        needed.load(services); // ну и сохранили сюдой
+        // ошибки должны обработаться внутри
+
     }
 }

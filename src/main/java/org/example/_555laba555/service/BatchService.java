@@ -10,21 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Сервис для управления коллекцией партий реактивов.
- * Отвечает за добавление, поиск, обновление и архивацию партий.
- * Хранит данные в HashMap
- */
+
 public class BatchService {
     /** Хранилище партий: ключ - ID, значение - объект ReagentBatch */
     private Map<Long, ReagentBatch> items = new HashMap<>();
 
     private long nextId = 1;
 
-    /**
-     * Добавляет новую партию в коллекцию.
-     * Генерирует ID, устанавливает даты создания и обновления,
-     */
+
     public ReagentBatch add(ReagentBatch batch) {
         batch.setId(nextId++);
         batch.setCreatedAt(Instant.now());
@@ -36,23 +29,17 @@ public class BatchService {
         return batch;
     }
 
-    /**
-     * Возвращает партию по ее ID.
-     */
+
     public ReagentBatch getById(long id) {
         return items.get(id);
     }
 
-    /**
-     * Возвращает список всех партий.
-     */
+
     public List<ReagentBatch> getAll() {
         return new ArrayList<>(items.values());
     }
 
-    /**
-     * Возвращает список партий, относящихся к указанному реактиву.
-     */
+
     public List<ReagentBatch> getByReagentId(long reagentId) {
         List<ReagentBatch> result = new ArrayList<>();
         for (ReagentBatch b : items.values()) {
@@ -62,9 +49,7 @@ public class BatchService {
         }
         return result;
     }
-    /**
-     * Обновляет существующую партию.
-     */
+
     public void update(ReagentBatch batch) {
         if (!items.containsKey(batch.getId())) {
             throw new ValidationException("Партия с ID " + batch.getId() + " не найдена");
@@ -74,9 +59,7 @@ public class BatchService {
         items.put(batch.getId(), batch);
     }
 
-    /**
-     * Архивирует партию (меняет статус на ARCHIVED).
-     */
+
     public void archive(long id) {
         ReagentBatch batch = items.get(id);
         if (batch == null) {
@@ -89,19 +72,12 @@ public class BatchService {
         batch.setUpdatedAt(Instant.now());
     }
 
-    /**
-     * Проверяет, существует ли партия с указанным ID.
-     */
+
     public boolean exists(long id) {
         return items.containsKey(id);
     }
 
-    /**
-     * Загружает партии из списка (используется при чтении файла).
-     * Очищает текущую коллекцию и заполняет новой.
-     *
-     * @param list список партий для загрузки
-     */
+
     public void loadFromList(List<ReagentBatch> list) {
         items.clear();  // очищаем старые данные
         for (ReagentBatch b : list) {
@@ -111,5 +87,11 @@ public class BatchService {
                 nextId = b.getId() + 1;
             }
         }
+    }
+    public void remove(long id) {
+        if (!items.containsKey(id)) {
+            throw new ValidationException("Партия с ID " + id + " не найдена");
+        }
+        items.remove(id);
     }
 }

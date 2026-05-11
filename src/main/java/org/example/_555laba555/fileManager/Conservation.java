@@ -7,80 +7,66 @@ import org.example._555laba555.service.ServiceManager;
 
 import java.io.*;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Класс для сохранения и загрузки данных в CSV файл.
- * Использует библиотеку OpenCSV для работы с CSV форматом.
- * Данные сохраняются в три секции: REAGENTS, BATCHES, MOVES.
- *
- */
 public class Conservation {
 
-    /** Путь к файлу для сохранения данных */
-    private final String dataFile;
+    private final String csvFile;// = "records.csv";// ну условно
 
-    /**
-     * Конструктор класса.
-     *
-     * @param dataFile путь к файлу, куда будут сохраняться данные
-     */
-    public Conservation(String dataFile) {
-        this.dataFile = dataFile;
+    public Conservation(String csvFile) { //для load
+        this.csvFile = csvFile;
     }
 
-    /**
-     * Сохраняет все данные из сервисов в CSV файл.
-     * <p>
-     * Сначала сохраняются реактивы, затем партии, затем движения.
-     * Каждая секция отделена заголовком [REAGENTS], [BATCHES], [MOVES].
-     * </p>
-     *
-     * @param services менеджер сервисов, содержащий все данные
-     * @throws StorageException если не удалось записать в файл
-     */
-    public void save(ServiceManager services) throws StorageException {
-        try (CSVWriter writer = new CSVWriter(new FileWriter(dataFile))) {
+    // конструктор по умолчанию
+    public Conservation() { // для save/load
 
-            // Секция реактивов
+        this("records.csv");
+    }
+
+    public void save(ServiceManager service) {
+        File file = new File(csvFile);
+        try (CSVWriter writer = new CSVWriter(new FileWriter(this.csvFile))) {
+
+            //REAGENTS
             writer.writeNext(new String[]{"[REAGENTS]"});
-            for (Reagent r : services.getReagentService().getAll()) {
+            for (Reagent r : service.getReagentService().getAll()) {
                 writer.writeNext(new String[]{
                         "REAGENT",
-                        String.valueOf(r.getId()),
-                        valueOrEmpty(r.getName()),
-                        valueOrEmpty(r.getFormula()),
-                        valueOrEmpty(r.getCas()),
-                        valueOrEmpty(r.getHazardClass()),
-                        valueOrEmpty(r.getOwnerUsername()),
-                        valueOrEmpty(r.getCreatedAt()),
-                        valueOrEmpty(r.getUpdatedAt())
+                        String.valueOf(r.getId()), // принимает long и возвращает строку, удобный системный метод парсинга для методов сохранения по сути
+                        r.getName() != null ? r.getName() : "", // здесь поле у нас может не заполняться создателем и поэтому делаем с помощью тернарного оператора так, чтобы можно было использовать поле но оставить его пустым по сути
+                        r.getFormula() != null ? r.getFormula() : "",
+                        r.getCas() != null ? r.getCas() : "",
+                        r.getHazardClass() != null ? r.getHazardClass() : "",
+                        r.getOwnerUsername() != null ? r.getOwnerUsername() : "",
+                        r.getCreatedAt() != null ? r.getCreatedAt().toString() : "",
+                        r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : ""
                 });
             }
 
-            // Секция партий
+            //BATCHES
             writer.writeNext(new String[]{"[BATCHES]"});
-            for (ReagentBatch b : services.getBatchService().getAll()) {
+            for (ReagentBatch b : service.getBatchService().getAll()) {
                 writer.writeNext(new String[]{
                         "BATCH",
                         String.valueOf(b.getId()),
                         String.valueOf(b.getReagentId()),
-                        valueOrEmpty(b.getLabel()),
+                        b.getLabel() != null ? b.getLabel() : "",
                         String.valueOf(b.getQuantityCurrent()),
                         b.getUnit() != null ? b.getUnit().name() : "",
-                        valueOrEmpty(b.getLocation()),
-                        valueOrEmpty(b.getExpiresAt()),
+                        b.getLocation() != null ? b.getLocation() : "",
+                        b.getExpiresAt() != null ? b.getExpiresAt().toString() : "",
                         b.getStatus() != null ? b.getStatus().name() : "",
-                        valueOrEmpty(b.getOwnerUsername()),
-                        valueOrEmpty(b.getCreatedAt()),
-                        valueOrEmpty(b.getUpdatedAt())
+                        b.getOwnerUsername() != null ? b.getOwnerUsername() : "",
+                        b.getCreatedAt() != null ? b.getCreatedAt().toString() : "",
+                        b.getUpdatedAt() != null ? b.getUpdatedAt().toString() : ""
                 });
             }
 
-            // Секция движений
+            //MOVES
             writer.writeNext(new String[]{"[MOVES]"});
-            for (StockMove m : services.getMoveService().getAll()) {
+            for (StockMove m : service.getMoveService().getAll()) {
                 writer.writeNext(new String[]{
                         "MOVE",
                         String.valueOf(m.getId()),
@@ -88,54 +74,47 @@ public class Conservation {
                         m.getType() != null ? m.getType().name() : "",
                         String.valueOf(m.getQuantity()),
                         m.getUnit() != null ? m.getUnit().name() : "",
-                        valueOrEmpty(m.getReason()),
-                        valueOrEmpty(m.getOwnerUsername()),
-                        valueOrEmpty(m.getMovedAt()),
-                        valueOrEmpty(m.getCreatedAt())
+                        m.getReason() != null ? m.getReason() : "",
+                        m.getOwnerUsername() != null ? m.getOwnerUsername() : "",
+                        m.getMovedAt() != null ? m.getMovedAt().toString() : "",
+                        m.getCreatedAt() != null ? m.getCreatedAt().toString() : ""
                 });
             }
 
         } catch (IOException e) {
-            throw new StorageException("Не удалось сохранить файл: " + e.getMessage(), e);
+            System.err.println("Ошибка сохранения: " + e.getMessage());
         }
+
     }
 
-    /**
-     * Загружает данные из CSV файла в сервисы.
-     * <p>
-     * Сначала данные читаются во временные списки, затем проходят валидацию,
-     * и только после этого заменяют данные в сервисах.
-     * Если файл не найден, загрузка пропускается.
-     * </p>
-     *
-     * @param services менеджер сервисов для загрузки данных
-     * @throws StorageException если файл поврежден или данные не проходят валидацию
-     */
-    public void load(ServiceManager services) throws StorageException {
-        File file = new File(dataFile);
+    public void load(ServiceManager serviceManager) {
+        File file = new File(csvFile);
+
         if (!file.exists()) {
-            System.out.println("Файл не найден, начинаем с пустыми данными");
+            System.out.println("программа не нашла файла, начинаем заново");
             return;
         }
-
+        if (file.length() == 0) {
+            System.out.println("файл пустой, начинаем с пустыми данными");
+            return;
+        }
         List<Reagent> tempReagents = new ArrayList<>();
         List<ReagentBatch> tempBatches = new ArrayList<>();
         List<StockMove> tempMoves = new ArrayList<>();
 
-        try (CSVReader reader = new CSVReader(new FileReader(dataFile))) {
+        try (CSVReader reader = new CSVReader(new FileReader(csvFile))) {
+
             String[] line;
-            String currentSection = "";
+            String currentSection = ""; // что-то что будет заполняемо
 
             while ((line = reader.readNext()) != null) {
-                if (line.length == 0) continue;
+                if (line.length == 0) continue; // переход к следующей итерации цикла
 
-                // Определяем секцию по заголовку
                 if (line[0].startsWith("[")) {
                     currentSection = line[0];
                     continue;
                 }
 
-                // Парсим данные в зависимости от секции
                 switch (currentSection) {
                     case "[REAGENTS]":
                         if (line[0].equals("REAGENT")) {
@@ -158,46 +137,43 @@ public class Conservation {
                 }
             }
 
-            // Проверяем целостность данных
-            validateData(tempReagents, tempBatches, tempMoves);
 
-            // Загружаем данные в сервисы
-            services.getReagentService().loadFromList(tempReagents);
-            services.getBatchService().loadFromList(tempBatches);
-            services.getMoveService().loadFromList(tempMoves);
 
-            System.out.println("Загружено: " + tempReagents.size() + " реактивов, " +
+            serviceManager.getReagentService().loadFromList(tempReagents);
+            serviceManager.getBatchService().loadFromList(tempBatches);
+            serviceManager.getMoveService().loadFromList(tempMoves);
+            System.out.println("Загружено " + tempReagents.size() + " реактивов, " +
                     tempBatches.size() + " партий, " + tempMoves.size() + " движений");
 
-        } catch (IOException e) {
-            throw new StorageException("Ошибка чтения файла: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new StorageException("Ошибка при загрузке: " + e.getMessage(), e);
+            System.err.println("Ошибка загрузки: " + e.getMessage());
         }
     }
 
-    /**
-     * Преобразует строку CSV в объект Reagent.
-     *
-     * @param data массив строк из CSV (одна запись)
-     * @return объект Reagent или null при ошибке
-     */
+
     private Reagent parseReagent(String[] data) {
         try {
-            Reagent r = new Reagent();
+            Reagent r = new Reagent(); // создаем пустой реагент без всего и начинаем заполнять полями которые есть в csv файле
             r.setId(Long.parseLong(data[1]));
             r.setName(data[2]);
             r.setFormula(emptyToNull(data[3]));
             r.setCas(emptyToNull(data[4]));
             r.setHazardClass(emptyToNull(data[5]));
             r.setOwnerUsername(emptyToNull(data[6]));
+            // тут у нас идут поля с приколами поэтому делаем внутреннюю валидацию еще
 
-            if (data.length > 7 && !data[7].isEmpty()) {
-                r.setCreatedAt(Instant.parse(data[7]));
+            if (data.length > 7 && data[7] != null && !data[7].isEmpty()) {
+                try {
+                    r.setCreatedAt(Instant.parse(data[7]));
+                } catch (DateTimeParseException ignored) {}
             }
-            if (data.length > 8 && !data[8].isEmpty()) {
-                r.setUpdatedAt(Instant.parse(data[8]));
+
+            if (data.length > 8 && data[8] != null && !data[8].isEmpty()) {
+                try {
+                    r.setUpdatedAt(Instant.parse(data[8]));
+                } catch (DateTimeParseException ignored) {}
             }
+
             return r;
         } catch (Exception e) {
             System.err.println("Ошибка парсинга реактива: " + e.getMessage());
@@ -205,37 +181,43 @@ public class Conservation {
         }
     }
 
-    /**
-     * Преобразует строку CSV в объект ReagentBatch.
-     *
-     * @param data массив строк из CSV (одна запись)
-     * @return объект ReagentBatch или null при ошибке
-     */
+
     private ReagentBatch parseBatch(String[] data) {
         try {
-            ReagentBatch b = new ReagentBatch();
+            ReagentBatch b = new ReagentBatch();// создаем пустую партию без всего и начинаем заполнять полями которые есть в csv файле
             b.setId(Long.parseLong(data[1]));
             b.setReagentId(Long.parseLong(data[2]));
             b.setLabel(data[3]);
             b.setQuantityCurrent(Double.parseDouble(data[4]));
             b.setUnit(BatchUnit.valueOf(data[5]));
             b.setLocation(data[6]);
-
-            if (data.length > 7 && !data[7].isEmpty()) {
-                b.setExpiresAt(Instant.parse(data[7]));
+            // тут у нас тоже идут поля с приколами поэтому делаем внутреннюю валидацию еще
+            if (data.length > 7 && data[7] != null && !data[7].isEmpty()) {
+                try {
+                    b.setExpiresAt(Instant.parse(data[7]));
+                } catch (DateTimeParseException ignored) {}
             }
-            if (data.length > 8 && !data[8].isEmpty()) {
+
+            if (data.length > 8 && data[8] != null && !data[8].isEmpty()) {
                 b.setStatus(BatchStatus.valueOf(data[8]));
             }
-            if (data.length > 9 && !data[9].isEmpty()) {
+
+            if (data.length > 9 && data[9] != null && !data[9].isEmpty()) {
                 b.setOwnerUsername(data[9]);
             }
-            if (data.length > 10 && !data[10].isEmpty()) {
-                b.setCreatedAt(Instant.parse(data[10]));
+
+            if (data.length > 10 && data[10] != null && !data[10].isEmpty()) {
+                try {
+                    b.setCreatedAt(Instant.parse(data[10]));
+                } catch (DateTimeParseException ignored) {}
             }
-            if (data.length > 11 && !data[11].isEmpty()) {
-                b.setUpdatedAt(Instant.parse(data[11]));
+
+            if (data.length > 11 && data[11] != null && !data[11].isEmpty()) {
+                try {
+                    b.setUpdatedAt(Instant.parse(data[11]));
+                } catch (DateTimeParseException ignored) {}
             }
+
             return b;
         } catch (Exception e) {
             System.err.println("Ошибка парсинга партии: " + e.getMessage());
@@ -243,31 +225,31 @@ public class Conservation {
         }
     }
 
-    /**
-     * Преобразует строку CSV в объект StockMove.
-     *
-     * @param data массив строк из CSV (одна запись)
-     * @return объект StockMove или null при ошибке
-     */
+
     private StockMove parseMove(String[] data) {
         try {
-            StockMove m = new StockMove();
+            StockMove m = new StockMove(); // создаем пустое передвижение без всего и начинаем заполнять полями которые есть в csv файле
             m.setId(Long.parseLong(data[1]));
             m.setBatchId(Long.parseLong(data[2]));
             m.setType(StockMoveType.valueOf(data[3]));
             m.setQuantity(Double.parseDouble(data[4]));
             m.setUnit(BatchUnit.valueOf(data[5]));
             m.setReason(emptyToNull(data[6]));
+            m.setOwnerUsername(emptyToNull(data[7]));
+            // и тут у нас также идут поля с приколами поэтому снова делаем внутреннюю валидацию еще
 
-            if (data.length > 7 && !data[7].isEmpty()) {
-                m.setOwnerUsername(data[7]);
+            if (data.length > 8 && data[8] != null && !data[8].isEmpty()) {
+                try {
+                    m.setMovedAt(Instant.parse(data[8]));
+                } catch (DateTimeParseException ignored) {}
             }
-            if (data.length > 8 && !data[8].isEmpty()) {
-                m.setMovedAt(Instant.parse(data[8]));
+
+            if (data.length > 9 && data[9] != null && !data[9].isEmpty()) {
+                try {
+                    m.setCreatedAt(Instant.parse(data[9]));
+                } catch (DateTimeParseException ignored) {}
             }
-            if (data.length > 9 && !data[9].isEmpty()) {
-                m.setCreatedAt(Instant.parse(data[9]));
-            }
+
             return m;
         } catch (Exception e) {
             System.err.println("Ошибка парсинга движения: " + e.getMessage());
@@ -275,73 +257,11 @@ public class Conservation {
         }
     }
 
-    /**
-     * Проверяет целостность загруженных данных.
-     * <p>
-     * Проверяет:
-     * <ul>
-     *   <li>Каждая партия ссылается на существующий реактив</li>
-     *   <li>Каждое движение ссылается на существующую партию</li>
-     * </ul>
-     * </p>
-     *
-     * @param reagents список загруженных реактивов
-     * @param batches список загруженных партий
-     * @param moves список загруженных движений
-     * @throws StorageException если найдена ссылка на несуществующий объект
-     */
-    private void validateData(List<Reagent> reagents, List<ReagentBatch> batches,
-                              List<StockMove> moves) throws StorageException {
 
-        // Проверка ссылок партий на реактивы
-        for (ReagentBatch b : batches) {
-            boolean found = false;
-            for (Reagent r : reagents) {
-                if (r.getId() == b.getReagentId()) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                throw new StorageException("Партия " + b.getId() +
-                        " ссылается на несуществующий реактив " + b.getReagentId());
-            }
-        }
-
-        // Проверка ссылок движений на партии
-        for (StockMove m : moves) {
-            boolean found = false;
-            for (ReagentBatch b : batches) {
-                if (b.getId() == m.getBatchId()) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                throw new StorageException("Движение " + m.getId() +
-                        " ссылается на несуществующую партию " + m.getBatchId());
-            }
-        }
-    }
-
-    /**
-     * Преобразует объект в строку, заменяя null на пустую строку.
-     *
-     * @param obj любой объект
-     * @return строковое представление объекта или пустая строка
-     */
-    private String valueOrEmpty(Object obj) {
-        return obj == null ? "" : obj.toString();
-    }
-
-    /**
-     * Преобразует пустую строку в null.
-     *
-     * @param s строка
-     * @return null если строка пустая, иначе исходную строку
-     */
-    private String emptyToNull(String s) {
+    private String emptyToNull(String s) { // по сути проверяет не передали пустую строку(использовать буду при парсинге)
         return (s == null || s.isEmpty()) ? null : s;
     }
-
+    public String getCsvFile() {
+        return csvFile;
+    }
 }

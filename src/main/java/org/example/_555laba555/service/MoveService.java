@@ -1,7 +1,9 @@
 package org.example._555laba555.service;
 
+import org.example._555laba555.domain.Reagent;
 import org.example._555laba555.domain.StockMove;
 import org.example._555laba555.validation.MoveValidator;
+import org.example._555laba555.validation.ValidationException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -15,18 +17,12 @@ import java.util.Map;
  * Хранит данные в HashMap
  */
 public class MoveService {
-    /**
-     * Хранилище движений: ключ - ID, значение - объект StockMove
-     */
+
     private Map<Long, StockMove> items = new HashMap<>();
 
     private long nextId = 1;
 
-    /**
-     * Добавляет новое движение в историю.
-     * Генерирует ID, проверяет достаточно ли реактива для расхода,
-     * устанавливает время создания.
-     */
+
     public StockMove add(StockMove move, double currentQuantity) {
         MoveValidator.validate(move);
         MoveValidator.checkQuantity(move, currentQuantity);
@@ -40,9 +36,7 @@ public class MoveService {
         items.put(move.getId(), move);
         return move;
     }
-    /**
-     * Возвращает список движений для указанной партии.
-     */
+
     public List<StockMove> getByBatchId(long batchId) {
         List<StockMove> result = new ArrayList<>();
         for (StockMove m : items.values()) {
@@ -52,13 +46,10 @@ public class MoveService {
         }
         return result;
     }
-    /**
-     * Возвращает список последних движений для указанной партии.
-     * Движения сортируются от новых к старым.
-     */
+
     public List<StockMove> getByBatchId(long batchId, int limit) { // любой элемент типа Comparator или лямбда выражение
         List<StockMove> all = getByBatchId(batchId);
-        all.sort( (a, b) -> { //
+        all.sort( (a, b) -> { // в функцию sort() подставляется лямбда выражения или элементы типа Comparator<E>
             if (a.getMovedAt() == null) return 1;
             if (b.getMovedAt() == null) return -1;
             return b.getMovedAt().compareTo(a.getMovedAt());
@@ -74,12 +65,7 @@ public class MoveService {
         return new ArrayList<>(items.values());
     }
 
-    /**
-     * Загружает движения из списка (используется при чтении файла).
-     * Очищает текущую коллекцию и заполняет новой.
-     *
-     * @param list список движений для загрузки
-     */
+
     public void loadFromList(List<StockMove> list) {
         items.clear();  // очищаем старые данные
         for (StockMove m : list) {
@@ -89,5 +75,14 @@ public class MoveService {
                 nextId = m.getId() + 1;
             }
         }
+    }
+    public void remove(long id) {
+        if (!items.containsKey(id)) {
+            throw new ValidationException("Партия с ID " + id + " не найдена");
+        }
+        items.remove(id);
+    }
+    public StockMove getMoveById(long id){
+        return items.get(id);
     }
 }
