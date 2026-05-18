@@ -35,7 +35,7 @@ public class StockReportCommand implements Command {
         long active = batches.stream().filter(b -> b.getStatus() == BatchStatus.ACTIVE).count();
         long archived = batches.size() - active;
 
-        System.out.println("\n=== ОТЧЕТ ПО СКЛАДУ ===");
+        System.out.println("\nОТЧЕТ ПО СКЛАДУ");
         System.out.println("Дата: " + LocalDate.now());
         System.out.println("Всего партий: " + batches.size() +
                 " (ACTIVE: " + active + ", ARCHIVED: " + archived + ")");

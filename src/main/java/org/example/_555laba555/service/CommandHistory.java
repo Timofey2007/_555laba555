@@ -14,15 +14,10 @@ public class CommandHistory {
         this.typeOfDeleted = typeOfDeleted;
         this.whenWasDeleted = LocalDateTime.now();
     }
-    public String getAction(){
-        return action;
-    }
     public String getTypeOfDeleted(){
         return typeOfDeleted;
     }
-    public LocalDateTime getWhenWasDeleted() {
-        return whenWasDeleted;
-    }
+
     @Override
     public String toString() {
         return String.format("[%s] %s %s %s", whenWasDeleted, action, typeOfDeleted, objectId);
@@ -38,7 +33,4 @@ public class CommandHistory {
         return deletedObject;
     }
 
-    public Long getObjectId() {
-        return objectId;
-    }
 }
