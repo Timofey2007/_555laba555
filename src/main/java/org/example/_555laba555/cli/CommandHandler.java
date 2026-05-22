@@ -40,7 +40,6 @@ public class CommandHandler {
         commands.put("stock_report", new StockReportCommand());
         commands.put("save", new SaveCommand());
         commands.put("load", new LoadCommand());
-        commands.put("ui", new UiCommand());
         commands.put("move_del", new MoveDelete());
         commands.put("reag_del", new ReagentDelete());
         commands.put("batch_del", new BatchDelete());

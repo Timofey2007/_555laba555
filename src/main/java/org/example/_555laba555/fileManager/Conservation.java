@@ -14,6 +14,8 @@ import java.util.List;
 public class Conservation {
 
     private final String csvFile;// = "records.csv";// ну условно
+    private static final String ALLOWED_EXTENSION = ".csv";
+
 
     public Conservation(String csvFile) { //для load
         this.csvFile = csvFile;
@@ -26,7 +28,6 @@ public class Conservation {
     }
 
     public void save(ServiceManager service) {
-        File file = new File(csvFile);
         try (CSVWriter writer = new CSVWriter(new FileWriter(this.csvFile))) {
 
             //REAGENTS
@@ -264,4 +265,5 @@ public class Conservation {
     public String getCsvFile() {
         return csvFile;
     }
+    
 }

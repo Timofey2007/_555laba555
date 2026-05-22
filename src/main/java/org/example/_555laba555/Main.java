@@ -4,6 +4,8 @@ import org.example._555laba555.cli.CommandHandler;
 import org.example._555laba555.fileManager.Conservation;
 import org.example._555laba555.service.ServiceManager;
 
+import static javafx.application.Application.launch;
+
 /**
  * Главный класс приложения.
  * При запуске программа проверяет аргументы командной строки:
@@ -19,7 +21,6 @@ public class Main {
      */
     public static void main(String[] args) {
         // Парсим аргументы командной строки
-        String mode = parseMode(args);
         String dataFile = parseDataFile(args);
 
         // Создаем менеджер сервисов (общий для всех режимов)
@@ -49,21 +50,6 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Ошибка сохранения при выходе: " + e.getMessage());
         }
-    }
-
-    /**
-     * Парсит режим запуска из аргументов.
-     *
-     * @param args аргументы командной строки
-     * @return "ui" для графического режима,
-     */
-    private static String parseMode(String[] args) {
-        for (String arg : args) {
-            if (arg.equals("--ui")) {
-                return "ui";
-            }
-        }
-        return "";
     }
 
     /**
