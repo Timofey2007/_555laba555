@@ -4,8 +4,6 @@ import org.example._555laba555.cli.CommandHandler;
 import org.example._555laba555.fileManager.Conservation;
 import org.example._555laba555.service.ServiceManager;
 
-import static javafx.application.Application.launch;
-
 /**
  * Главный класс приложения.
  * При запуске программа проверяет аргументы командной строки:
@@ -17,7 +15,6 @@ public class Main {
 
     /**
      * Точка входа в программу.
-     *
      */
     public static void main(String[] args) {
         // Парсим аргументы командной строки
@@ -37,19 +34,20 @@ public class Main {
             System.out.println("Начинаем с пустыми данными");
         }
 
+        System.out.println("Запуск консольного интерфейса...");
+        CommandHandler handler = new CommandHandler(services, storage);
+        handler.run();
 
-                System.out.println("Запуск консольного интерфейса...");
-                CommandHandler handler = new CommandHandler(services, storage);
-                handler.run();
-
-
-        // Сохраняем данные перед выходом (на всякий случай)
+        // Сохраняем данные перед выходом
         try {
             storage.save(services);
             System.out.println("Данные сохранены в: " + dataFile);
         } catch (Exception e) {
-            System.err.println("Ошибка сохранения при выходе: " + e.getMessage());
+            System.err.println("Ошибка сохранения данных: " + e.getMessage());
         }
+
+        // Сохраняем пользователей
+        services.saveUsers();
     }
 
     /**

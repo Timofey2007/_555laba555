@@ -45,7 +45,10 @@ public class CommandHandler {
         commands.put("batch_del", new BatchDelete());
         commands.put("history_show", new HistoryShow());
         commands.put("cancel_del", new DeletingOfDeleting());
-
+        commands.put("register", new RegisterCommand());
+        commands.put("login", new LoginCommand());
+        commands.put("logout", new LogoutCommand());
+        commands.put("whoami", new WhoamiCommand());
 
 
 

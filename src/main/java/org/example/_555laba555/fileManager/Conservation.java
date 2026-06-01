@@ -40,7 +40,7 @@ public class Conservation {
                         r.getFormula() != null ? r.getFormula() : "",
                         r.getCas() != null ? r.getCas() : "",
                         r.getHazardClass() != null ? r.getHazardClass() : "",
-                        r.getOwnerUsername() != null ? r.getOwnerUsername() : "",
+                        r.getOwnerName() != null ? r.getOwnerName() : "",
                         r.getCreatedAt() != null ? r.getCreatedAt().toString() : "",
                         r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : ""
                 });
@@ -160,7 +160,7 @@ public class Conservation {
             r.setFormula(emptyToNull(data[3]));
             r.setCas(emptyToNull(data[4]));
             r.setHazardClass(emptyToNull(data[5]));
-            r.setOwnerUsername(emptyToNull(data[6]));
+            r.setOwnerName(emptyToNull(data[6]));
             // тут у нас идут поля с приколами поэтому делаем внутреннюю валидацию еще
 
             if (data.length > 7 && data[7] != null && !data[7].isEmpty()) {

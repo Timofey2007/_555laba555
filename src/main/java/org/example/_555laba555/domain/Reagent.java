@@ -36,7 +36,7 @@ public final class Reagent {
     /**
      * Кто создал запись (логин).
      */
-    private String ownerUsername;
+    private String ownerName;
     /**
      * Когда создано. Программа ставит автоматически.
      */
@@ -45,6 +45,7 @@ public final class Reagent {
      * Когда обновляли. Программа обновляет автоматически
      */
     private Instant updatedAt;
+    private long ownerId;
 
     /**
      * Конструктор по умолчанию.
@@ -62,7 +63,7 @@ public final class Reagent {
         setFormula(formula);
         setCas(cas);
         setHazardClass(hazardClass);
-        this.ownerUsername = ownerUsername;
+        this.ownerName = ownerUsername;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -74,6 +75,10 @@ public final class Reagent {
     public void setId(long id) {
         this.id = id;
     }
+
+    public long getOwnerId() { return ownerId; }
+    public void setOwnerId(long ownerId) { this.ownerId = ownerId; }
+
 
     public String getName() {
         return name;
@@ -122,12 +127,12 @@ public final class Reagent {
         this.hazardClass = hazardClass != null ? hazardClass.trim() : null;
     }
 
-    public String getOwnerUsername() {
-        return ownerUsername;
+    public String getOwnerName() {
+        return ownerName;
     }
 
-    public void setOwnerUsername(String ownerUsername) {
-        this.ownerUsername = ownerUsername;
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 
     public Instant getCreatedAt() {
@@ -167,7 +172,7 @@ public final class Reagent {
                 ", formula='" + formula + '\'' +
                 ", cas='" + cas + '\'' +
                 ", hazardClass='" + hazardClass + '\'' +
-                ", ownerUsername='" + ownerUsername + '\'' +
+                ", ownerUsername='" + ownerName + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

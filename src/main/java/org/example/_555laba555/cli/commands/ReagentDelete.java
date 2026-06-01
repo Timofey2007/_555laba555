@@ -14,30 +14,64 @@ public class ReagentDelete implements Command {
     @Override
     public void justDOIT(ServiceManager services, InputHelper input,
                          Conservation storage, String args) {
-        if (args == null || args.trim().isEmpty()) return;
+        // Проверка авторизации
+        if (!services.getUserService().isAuthenticated()) {
+            System.out.println("Ошибка: необходимо авторизоваться (команда 'login')");
+            return;
+        }
+
+        if (args == null || args.trim().isEmpty()) {
+            System.out.println("Использование: reag_del <ID>");
+            return;
+        }
+
         long reagentId;
         try {
             reagentId = Long.parseLong(args.trim());
         } catch (NumberFormatException e) {
-            throw new RuntimeException(e);
+            System.out.println("Ошибка: ID должен быть числом");
+            return;
         }
+
         Reagent reagent = services.getReagentService().getReagentById(reagentId);
-        if (reagent == null) return;
-        System.out.println("Вы собираетесь удалить реагент" + reagent + "Уверены что вы хотите удалить реагент? Y/N");
-        try{
-            System.out.println("Уверены что хотите удалить? Y/N");
-            String confirm = input.readString("", true);
-            if (!confirm.equalsIgnoreCase("Y")) return;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (reagent == null) {
+            System.out.println("Реагент с ID " + reagentId + " не найден");
+            return;
         }
+
+        // Проверка прав: можно удалять только свои реактивы или админу
+        long currentUserId = services.getUserService().getCurrentUserId();
+        if (reagent.getOwnerId() != currentUserId && !services.getUserService().isAdmin()) {
+            System.out.println("Ошибка: у вас нет прав на удаление этого реактива");
+            System.out.println("   Владелец: " + reagent.getOwnerName());
+            return;
+        }
+
+        System.out.println("\nВЫ СОБИРАЕТЕСЬ УДАЛИТЬ РЕАГЕНТ:");
+        System.out.println("   ID: " + reagent.getId());
+        System.out.println("   Название: " + reagent.getName());
+        System.out.println("   Владелец: " + reagent.getOwnerName());
+
+        try {
+            System.out.print("\nУверены, что хотите удалить? (Y/N): ");
+            String confirm = input.readString("", true);
+            if (!confirm.equalsIgnoreCase("Y")) {
+                System.out.println("Удаление отменено");
+                return;
+            }
+        } catch (IOException e) {
+            System.out.println("Ошибка ввода: " + e.getMessage());
+            return;
+        }
+
+        // Сохраняем копию для отмены
         CommandHistory history = new CommandHistory("delete", "reagent");
         history.setDeletedObject(copyReagent(reagent));
         history.setObjectId(reagentId);
         services.pushHistory(history);
 
         services.getReagentService().remove(reagentId);
-
+        System.out.println("\nРеагент удален. Введите 'cancel_del' для восстановления");
     }
 
     private Reagent copyReagent(Reagent original) {
@@ -47,7 +81,8 @@ public class ReagentDelete implements Command {
         copy.setFormula(original.getFormula());
         copy.setCas(original.getCas());
         copy.setHazardClass(original.getHazardClass());
-        copy.setOwnerUsername(original.getOwnerUsername());
+        copy.setOwnerId(original.getOwnerId());
+        copy.setOwnerName(original.getOwnerName());
         copy.setCreatedAt(original.getCreatedAt());
         copy.setUpdatedAt(original.getUpdatedAt());
         return copy;
