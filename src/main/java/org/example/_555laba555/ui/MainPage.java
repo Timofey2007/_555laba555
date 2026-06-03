@@ -1,4 +1,5 @@
 package org.example._555laba555.ui;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -9,7 +10,7 @@ import org.example._555laba555.fileManager.Conservation;
 import org.example._555laba555.service.ServiceManager;
 
 import java.io.File;
-// Класс отвечающий за главную стрницу extends Application обязательна инициация init() и start() из реализованных прям здесь функций панелька ФАЙЛ + загруить сохранить
+
 public class MainPage extends Application {
     private ServiceManager serviceManager;
     private Conservation conservation;
@@ -17,26 +18,38 @@ public class MainPage extends Application {
     private Stage primaryStage;
 
     @Override
-    public void init(){
-        // тут я бы спросил у препода почему не работает приходиться отдельно нажимать выбирать файл видимо прога не видит record.csv
+    public void init() {
         this.serviceManager = new ServiceManager();
-        try{
+        try {
             this.currentFile = "records.csv";
             this.conservation = new Conservation(currentFile);
             this.conservation.load(serviceManager);
-        }catch (Exception e){
-            System.err.println("Ошибка загруски в lavafx: "+e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Ошибка загрузки в javafx: " + e.getMessage());
         }
     }
+
     @Override
-    public void start(Stage primaryStage){
-
-
+    public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        BorderPane root = new BorderPane();
+        showAuthMenu();
+    }
 
-        MenuBar menuBar =new MenuBar();
+    public void showAuthMenu() { //меню авторизации с вызовом класса MenuView
+        MenuView authMenu = new MenuView(this, serviceManager, conservation);
+        Scene scene = new Scene(authMenu, 400, 300);
+        primaryStage.setTitle("Авторизация");
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);// нельзя менять мер окна
+        primaryStage.show();
+    }
+
+    public void showMainScreen() {
+        BorderPane root = new BorderPane();
+        MenuBar menuBar = new MenuBar();
+
         Menu fileMnu = new Menu("ФАЙЛ");
+
         MenuItem loadItem = new MenuItem("Загрузить");
         loadItem.setOnAction(e -> handleLoadFile());
 
@@ -55,32 +68,32 @@ public class MainPage extends Application {
         tabPane.getTabs().add(new Tab("Движения", new MoveView(serviceManager, conservation)));
         root.setCenter(tabPane);
 
+        primaryStage.setResizable(true);
         primaryStage.setScene(new Scene(root, 1000, 700));
         updateTitle();
         primaryStage.show();
     }
+
     private void handleLoadFile() {
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(primaryStage);
-
         if (selectedFile != null) {
             try {
                 this.currentFile = selectedFile.getAbsolutePath();
                 this.conservation = new Conservation(currentFile);
                 this.conservation.load(serviceManager);
-                updateTitle();
             } catch (Exception ex) {
                 showError("Ошибка при смене файла: " + ex.getMessage());
             }
         }
     }
+
     private void updateTitle() {
-        primaryStage.setTitle("Не работающий файл — [" + currentFile + "]");
+        String login = serviceManager.getUserService().getCurrentUser().getLogin();
+        primaryStage.setTitle("Система учета — [" + currentFile + "] Пользователь: "+ login +"");
     }
 
     private void showError(String msg) {
         new Alert(Alert.AlertType.ERROR, msg).showAndWait();
     }
-
-
 }
