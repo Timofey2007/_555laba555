@@ -15,6 +15,7 @@ public class BatchAddUI {
     public void execute(long reagentId, String label, double quantity, BatchUnit unit,
                         String location, Instant expiresAt) {
         ReagentBatch batch = new ReagentBatch();
+        String login = services.getUserService().getCurrentUserLogin();
 
         batch.setReagentId(reagentId);
         batch.setLabel(label);
@@ -22,6 +23,7 @@ public class BatchAddUI {
         batch.setUnit(unit);
         batch.setLocation(location);
         batch.setExpiresAt(expiresAt);
+        batch.setOwnerUsername(login);
 
         services.getBatchService().add(batch);
     }

@@ -21,6 +21,7 @@ public class MoveAddUI {
         if (batch == null) {
             throw new ValidationException("Партия с ID " + batchId + " не найдена");
         }
+        String login = services.getUserService().getCurrentUserLogin();
 
         StockMove move = new StockMove();
         move.setBatchId(batchId);
@@ -28,6 +29,12 @@ public class MoveAddUI {
         move.setQuantity(quantity);
         move.setUnit(unit);
         move.setReason(reason);
+        move.setOwnerUsername(login);
+        if (move.getType() == StockMoveType.IN) {
+            batch.setQuantityCurrent(batch.getQuantityCurrent() + quantity);
+        } else {
+            batch.setQuantityCurrent(batch.getQuantityCurrent() - quantity);
+        }
 
         services.getMoveService().add(move, batch.getQuantityCurrent());
     }
