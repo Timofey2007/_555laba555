@@ -1,48 +1,64 @@
 package org.example._555laba555.service;
 
+import org.example._555laba555.dataBase.BatchRepository;
 import org.example._555laba555.domain.ReagentBatch;
 import org.example._555laba555.domain.BatchStatus;
 import org.example._555laba555.validation.BatchValidator;
 import org.example._555laba555.validation.ValidationException;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class BatchService {
-    /** Хранилище партий: ключ - ID, значение - объект ReagentBatch */
-    private Map<Long, ReagentBatch> items = new HashMap<>();
+    private final BatchRepository repository;
+    private final Map<Long, ReagentBatch> cache = new HashMap<>();
 
-    private long nextId = 1;
-
-
-    public ReagentBatch add(ReagentBatch batch) {
-        batch.setId(nextId++);
-        batch.setCreatedAt(Instant.now());
-        batch.setUpdatedAt(Instant.now());
-
-        BatchValidator.validate(batch);
-
-        items.put(batch.getId(), batch);
-        return batch;
+    public BatchService(BatchRepository repository) {
+        this.repository = repository;
+        loadFromDatabase();
+    }
+    public BatchService() {
+        this.repository = null;
     }
 
-
-    public ReagentBatch getById(long id) {
-        return items.get(id);
+    private void loadFromDatabase() {
+        try {
+            cache.clear();
+            for (ReagentBatch b : repository.findAll()) {
+                cache.put(b.getId(), b);
+            }
+        } catch (SQLException e) {
+            System.err.println("Ошибка загрузки партий из БД: " + e.getMessage());
+        }
     }
 
+    public ReagentBatch add(ReagentBatch batch) throws ValidationException {
+        try {
+            BatchValidator.validate(batch);
+            batch.setCreatedAt(Instant.now());
+            batch.setUpdatedAt(Instant.now());
+            repository.insert(batch);
+            cache.put(batch.getId(), batch);
+            return batch;
+        } catch (SQLException e) {
+            throw new ValidationException("Ошибка БД при добавлении партии: " + e.getMessage());
+        }
+    }
 
     public List<ReagentBatch> getAll() {
-        return new ArrayList<>(items.values());
+        return new ArrayList<>(cache.values());
     }
 
+    public ReagentBatch getById(long id) {
+        return cache.get(id);
+    }
 
     public List<ReagentBatch> getByReagentId(long reagentId) {
         List<ReagentBatch> result = new ArrayList<>();
-        for (ReagentBatch b : items.values()) {
+        for (ReagentBatch b : cache.values()) {
             if (b.getReagentId() == reagentId) {
                 result.add(b);
             }
@@ -50,48 +66,47 @@ public class BatchService {
         return result;
     }
 
-    public void update(ReagentBatch batch) {
-        if (!items.containsKey(batch.getId())) {
-            throw new ValidationException("Партия с ID " + batch.getId() + " не найдена");
+    public void update(ReagentBatch batch) throws ValidationException {
+        try {
+            BatchValidator.validate(batch);
+            batch.setUpdatedAt(Instant.now());
+            repository.update(batch);
+            cache.put(batch.getId(), batch);
+        } catch (SQLException e) {
+            throw new ValidationException("Ошибка обновления партии: " + e.getMessage());
         }
-        batch.setUpdatedAt(Instant.now());
-        BatchValidator.validate(batch);
-        items.put(batch.getId(), batch);
     }
 
-
-    public void archive(long id) {
-        ReagentBatch batch = items.get(id);
+    public void archive(long id) throws ValidationException {
+        ReagentBatch batch = cache.get(id);
         if (batch == null) {
-            throw new ValidationException("Партия с ID " + id + " не найдена");
+            throw new ValidationException("Партия не найдена");
         }
         if (batch.getStatus() == BatchStatus.ARCHIVED) {
             throw new ValidationException("Партия уже в архиве");
         }
         batch.setStatus(BatchStatus.ARCHIVED);
         batch.setUpdatedAt(Instant.now());
+        try {
+            repository.update(batch);
+            cache.put(batch.getId(), batch);
+        } catch (SQLException e) {
+            throw new ValidationException("Ошибка архивации: " + e.getMessage());
+        }
     }
 
-
-    public boolean exists(long id) {
-        return items.containsKey(id);
+    public void remove(long id) throws ValidationException {
+        try {
+            repository.delete(id);
+            cache.remove(id);
+        } catch (SQLException e) {
+            throw new ValidationException("Ошибка удаления партии: " + e.getMessage());
+        }
     }
-
-
     public void loadFromList(List<ReagentBatch> list) {
-        items.clear();  // очищаем старые данные
+        cache.clear();
         for (ReagentBatch b : list) {
-            items.put(b.getId(), b);
-            // обновляем счетчик ID, чтобы новые объекты не пересекались
-            if (b.getId() >= nextId) {
-                nextId = b.getId() + 1;
-            }
+            cache.put(b.getId(), b);
         }
-    }
-    public void remove(long id) {
-        if (!items.containsKey(id)) {
-            throw new ValidationException("Партия с ID " + id + " не найдена");
-        }
-        items.remove(id);
     }
 }

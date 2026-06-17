@@ -177,4 +177,8 @@ public final class Reagent {
                 ", updatedAt=" + updatedAt +
                 '}';
     }
+
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerName = ownerUsername;
+    }
 }

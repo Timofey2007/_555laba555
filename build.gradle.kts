@@ -20,9 +20,6 @@ dependencies {
     // OpenCSV для работы с CSV файлами
     implementation("com.opencsv:opencsv:5.9")
 
-    // PostgreSQL JDBC Driver
-    implementation("org.postgresql:postgresql:42.7.3")
-
     // JavaFX дополнительные библиотеки
     implementation("org.controlsfx:controlsfx:11.2.1")
     implementation("com.dlsc.formsfx:formsfx-core:11.6.0")
@@ -34,6 +31,9 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    implementation("org.postgresql:postgresql:42.7.3")  // JDBC драйвер
+    implementation("com.opencsv:opencsv:5.9")
 }
 
 application {

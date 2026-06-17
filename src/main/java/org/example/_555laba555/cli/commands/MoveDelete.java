@@ -9,7 +9,6 @@ import org.example._555laba555.service.CommandHistory;
 import org.example._555laba555.service.ServiceManager;
 
 import java.io.IOException;
-
 public class MoveDelete implements Command {
     @Override
     public void justDOIT(ServiceManager services, InputHelper input,

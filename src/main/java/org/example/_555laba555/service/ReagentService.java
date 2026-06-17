@@ -9,20 +9,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class ReagentService {
     private Map<Long, Reagent> items = new HashMap<>();
-
     private long nextId = 1;
 
-
+    public ReagentService() {
+        // пустой конструктор для файлового режима
+    }
     public Reagent add(Reagent reagent) {
         reagent.setId(nextId++);
         reagent.setCreatedAt(Instant.now());
         reagent.setUpdatedAt(Instant.now());
-
         ReagentValidator.validate(reagent);
-
         items.put(reagent.getId(), reagent);
         return reagent;
     }
@@ -31,10 +29,9 @@ public class ReagentService {
         return new ArrayList<>(items.values());
     }
 
-
     public List<Reagent> searchByName(String text) {
         if (text == null || text.isEmpty()) {
-            return getAll(); //грубо говоря аналог для геттера всех названий
+            return getAll();
         }
         String lower = text.toLowerCase();
         List<Reagent> result = new ArrayList<>();
@@ -54,16 +51,10 @@ public class ReagentService {
         return items.isEmpty();
     }
 
-    public void loadFromList(List<Reagent> list) {
-        items.clear();  // очищаем старые данные
-        for (Reagent r : list) {
-            items.put(r.getId(), r);
-            // обновляем счетчик ID, чтобы новые объекты не пересекались
-            if (r.getId() >= nextId) {
-                nextId = r.getId() + 1;
-            }
-        }
+    public Reagent getReagentById(long id) {
+        return items.get(id);
     }
+
     public void update(Reagent reagent) {
         if (!items.containsKey(reagent.getId())) {
             throw new ValidationException("Реактив не найден");
@@ -79,8 +70,20 @@ public class ReagentService {
         }
         items.remove(id);
     }
-    public Reagent getReagentById(long id){
-        return items.get(id);
-    }
 
+    /**
+     * Загружает список реактивов из внешнего источника (файл или БД)
+     * Очищает текущую коллекцию и заполняет новыми данными
+     *
+     * @param list список реактивов для загрузки
+     */
+    public void loadFromList(List<Reagent> list) {
+        items.clear();
+        for (Reagent r : list) {
+            items.put(r.getId(), r);
+            if (r.getId() >= nextId) {
+                nextId = r.getId() + 1;
+            }
+        }
+    }
 }

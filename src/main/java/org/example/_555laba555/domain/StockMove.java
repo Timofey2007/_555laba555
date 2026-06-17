@@ -9,43 +9,19 @@ import java.util.Objects;
 public final class StockMove {
     public static final int MAX_REASON_LENGTH = 128;
 
-    /**
-     * Уникальный номер движения. Программа назначает сама.
-     */
     private long id;
-    /**
-     * К какой бутылке относится движение (id бутылки).
-     * Должен ссылаться на реально существующий ReagentBatch
-     */
     private long batchId;
-    /**
-     * Тип движения: IN (приход), OUT (расход), DISCARD (списание).
-     */
     private StockMoveType type;
-    /**
-     * Количество (число). Должно быть > 0.
-     */
     private double quantity;
-    /**
-     * Единицы (берём из бутылки, чтобы не путаться).
-     */
     private BatchUnit unit;
-    /**
-     * Причина/комментарий (можно пусто). До 128 символов.
-     */
     private String reason;
-    /**
-     * Кто сделал движение (логин).
-     */
     private String ownerUsername;
-    /**
-     * Время движения. Если не вводят — текущее.
-     */
     private Instant movedAt;
-    /**
-     * Когда запись создана. Программа ставит автоматически.
-     */
     private Instant createdAt;
+
+    // НОВЫЕ ПОЛЯ ДЛЯ ВЛАДЕЛЬЦА
+    private long ownerId;
+    private String ownerName;
 
     public StockMove() {
     }
@@ -63,27 +39,14 @@ public final class StockMove {
         this.createdAt = createdAt;
     }
 
+    // СУЩЕСТВУЮЩИЕ ГЕТТЕРЫ/СЕТТЕРЫ
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
 
-    public long getId() {
-        return id;
-    }
+    public long getBatchId() { return batchId; }
+    public void setBatchId(long batchId) { this.batchId = batchId; }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public long getBatchId() {
-        return batchId;
-    }
-
-    public void setBatchId(long batchId) {
-        this.batchId = batchId;
-    }
-
-    public StockMoveType getType() {
-        return type;
-    }
-
+    public StockMoveType getType() { return type; }
     public void setType(StockMoveType type) {
         if (type == null) {
             throw new IllegalArgumentException("тип движения должен быть указан");
@@ -91,10 +54,7 @@ public final class StockMove {
         this.type = type;
     }
 
-    public double getQuantity() {
-        return quantity;
-    }
-
+    public double getQuantity() { return quantity; }
     public void setQuantity(double quantity) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("количество должно быть положительным");
@@ -102,10 +62,7 @@ public final class StockMove {
         this.quantity = quantity;
     }
 
-    public BatchUnit getUnit() {
-        return unit;
-    }
-
+    public BatchUnit getUnit() { return unit; }
     public void setUnit(BatchUnit unit) {
         if (unit == null) {
             throw new IllegalArgumentException("единицы измерения должны быть указаны");
@@ -113,10 +70,7 @@ public final class StockMove {
         this.unit = unit;
     }
 
-    public String getReason() {
-        return reason;
-    }
-
+    public String getReason() { return reason; }
     public void setReason(String reason) {
         if (reason != null && reason.length() > MAX_REASON_LENGTH) {
             throw new IllegalArgumentException("причина слишком длинная (макс. " + MAX_REASON_LENGTH + ")");
@@ -124,29 +78,22 @@ public final class StockMove {
         this.reason = reason != null ? reason.trim() : null;
     }
 
-    public String getOwnerUsername() {
-        return ownerUsername;
-    }
+    public String getOwnerUsername() { return ownerUsername; }
+    public void setOwnerUsername(String ownerUsername) { this.ownerUsername = ownerUsername; }
 
-    public void setOwnerUsername(String ownerUsername) {
-        this.ownerUsername = ownerUsername;
-    }
+    public Instant getMovedAt() { return movedAt; }
+    public void setMovedAt(Instant movedAt) { this.movedAt = movedAt; }
 
-    public Instant getMovedAt() {
-        return movedAt;
-    }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
-    public void setMovedAt(Instant movedAt) {
-        this.movedAt = movedAt;
-    }
+    // НОВЫЕ ГЕТТЕРЫ/СЕТТЕРЫ ДЛЯ ВЛАДЕЛЬЦА
+    public long getOwnerId() { return ownerId; }
+    public void setOwnerId(long ownerId) { this.ownerId = ownerId; }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
 
     @Override
     public boolean equals(Object o) {

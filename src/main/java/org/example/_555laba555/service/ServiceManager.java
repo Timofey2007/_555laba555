@@ -1,6 +1,8 @@
 package org.example._555laba555.service;
 
-import org.example._555laba555.fileManager.UserStorage;
+import org.example._555laba555.fileManager.Conservation;
+import org.example._555laba555.dataBase.DatabaseStorage;
+import org.example._555laba555.storage.Storage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,63 +10,80 @@ import java.util.Stack;
 
 public class ServiceManager {
     private final ReagentService reagentService;
-
     private final BatchService batchService;
-
     private final MoveService moveService;
-
     private final UserService userService;
+    private final Storage storage;
 
-    private final UserStorage userStorage;
+    private final Stack<CommandHistory> history = new Stack<>();
 
-    private final Stack<CommandHistory> history = new Stack<>(); // удобство использования Stack при работе с историей заключается в том, что все элементы стэка грубо говоря складываются друг на друга и автоматически работа ведется только с последним элементом
-
-
-    public ServiceManager() {
+    public ServiceManager(boolean useDatabase) {
         this.reagentService = new ReagentService();
         this.batchService = new BatchService();
         this.moveService = new MoveService();
-        this.userService = new UserService();
-        this.userStorage = new UserStorage();
-    }
-    // сервисы для работы с файловой составляющей
+        this.userService = new UserService(null);
 
-    public ReagentService getReagentService() {
-        return reagentService;
-    }
+        if (useDatabase) {
+            this.storage = new DatabaseStorage();
+            System.out.println("Режим: PostgreSQL");
+        } else {
+            this.storage = new Conservation();
+            System.out.println("Режим: CSV файл");
+        }
 
-    public BatchService getBatchService() {
-        return batchService;
-    }
-    public UserService getUserService() {
-        return userService;
-    }
-
-    public UserStorage getUserStorage() {
-        return userStorage;
+        try {
+            storage.load(this);
+        } catch (Exception e) {
+            System.out.println("Не удалось загрузить данные: " + e.getMessage());
+        }
     }
 
-    // сохраняем пользователей
-    public void saveUsers() {
-        userStorage.saveUsers(userService.getAllUsers());
+    public ServiceManager() {
+        this(false);
     }
 
+    public ReagentService getReagentService() { return reagentService; }
+    public BatchService getBatchService() { return batchService; }
+    public MoveService getMoveService() { return moveService; }
+    public UserService getUserService() { return userService; }
+    public Storage getStorage() { return storage; }
 
-    public MoveService getMoveService() {
-        return moveService;
-    }
-
+    /**
+     * Добавляет команду в историю.
+     * Вызывается перед выполнением операции, которую можно отменить.
+     */
     public void pushHistory(CommandHistory cmd) {
-        history.push(cmd); // добавляет действие совершенное
+        history.push(cmd);
     }
+
+
     public CommandHistory popHistory() {
-        return history.isEmpty() ? null : history.pop(); // обращается к последнему элементу и удаляет его после чего переходит к следующему в стэке
+        return history.isEmpty() ? null : history.pop();
     }
+
 
     public boolean isHistoryEmpty() {
         return history.isEmpty();
     }
+
     public List<CommandHistory> getHistory() {
-        return new ArrayList<>(history);  // возвращаем копию чтобы не нарушить порядок
+        return new ArrayList<>(history);
+    }
+
+
+    public void saveAll() {
+        try {
+            storage.save(this);
+        } catch (Exception e) {
+            System.err.println("Ошибка сохранения: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Сохраняет пользователей (для файлового режима)
+     * В БД-режиме пользователи уже сохранены
+     */
+    public void saveUsers() {
+        userService.saveUsers();
     }
 }

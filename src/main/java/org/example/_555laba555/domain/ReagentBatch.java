@@ -11,12 +11,12 @@ public final class ReagentBatch {
     public static final int MAX_LOCATION_LENGTH = 64;
 
     /**
-     *Уникальный номер бутылки/партии. Программа назначает сама
+     * Уникальный номер бутылки/партии. Программа назначает сама
      */
     private long id;
     /**
-     *  К какому реактиву относится (id реактива).
-     *  Должен ссылаться на реально существующий Reagent.
+     * К какому реактиву относится (id реактива).
+     * Должен ссылаться на реально существующий Reagent.
      */
     private long reagentId;
     /**
@@ -56,6 +56,12 @@ public final class ReagentBatch {
      */
     private Instant updatedAt;
 
+    /**
+     * ID владельца (для связи с таблицей users в БД)
+     * Используется только в режиме PostgreSQL
+     */
+    private long ownerId;
+
     public ReagentBatch() {
     }
 
@@ -80,6 +86,9 @@ public final class ReagentBatch {
         return id;
     }
 
+    public void setOwnerName(String ownerUsername){
+        this.ownerUsername =ownerUsername;
+    }
     public void setId(long id) {
         this.id = id;
     }
@@ -180,6 +189,22 @@ public final class ReagentBatch {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    /**
+     * Получить ID владельца
+     * @return ownerId (0 если не установлен)
+     */
+    public long getOwnerId() {
+        return ownerId;
+    }
+
+    /**
+     * Установить ID владельца (для связи с users)
+     * @param ownerId ID пользователя из таблицы users
+     */
+    public void setOwnerId(long ownerId) {
+        this.ownerId = ownerId;
     }
 
     @Override

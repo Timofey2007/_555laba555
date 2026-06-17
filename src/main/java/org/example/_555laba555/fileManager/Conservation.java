@@ -4,6 +4,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import org.example._555laba555.domain.*;
 import org.example._555laba555.service.ServiceManager;
+import org.example._555laba555.storage.Storage;
 
 import java.io.*;
 import java.time.Instant;
@@ -11,10 +12,9 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Conservation {
+public class Conservation implements Storage {
 
     private final String csvFile;// = "records.csv";// ну условно
-    private static final String ALLOWED_EXTENSION = ".csv";
 
 
     public Conservation(String csvFile) { //для load

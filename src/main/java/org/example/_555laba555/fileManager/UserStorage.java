@@ -9,15 +9,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Хранилище пользователей (отдельный файл)
- */
 public class UserStorage {
     private static final String USER_FILE = "users.csv";
 
-    /**
-     * Сохранить пользователей в файл
-     */
     public void saveUsers(Map<Long, User> users) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(USER_FILE))) {
             writer.writeNext(new String[]{"id", "login", "passwordHash", "role", "createdAt", "lastLogin"});
@@ -38,9 +32,6 @@ public class UserStorage {
         }
     }
 
-    /**
-     * Загрузить пользователей из файла
-     */
     public Map<Long, User> loadUsers() {
         Map<Long, User> users = new HashMap<>();
         File file = new File(USER_FILE);
@@ -51,7 +42,7 @@ public class UserStorage {
         }
 
         try (CSVReader reader = new CSVReader(new FileReader(USER_FILE))) {
-            reader.skip(1); // пропустить заголовок
+            reader.skip(1);
             String[] line;
 
             while ((line = reader.readNext()) != null) {
