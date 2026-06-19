@@ -3,18 +3,12 @@ package org.example._555laba555.cli.commands;
 import org.example._555laba555.cli.Command;
 import org.example._555laba555.cli.InputHelper;
 import org.example._555laba555.domain.Reagent;
-import org.example._555laba555.fileManager.Conservation;
 import org.example._555laba555.service.CommandHistory;
 import org.example._555laba555.service.ServiceManager;
 
-import java.io.IOException;
-
 public class ReagentDelete implements Command {
-
     @Override
-    public void justDOIT(ServiceManager services, InputHelper input,
-                         Conservation storage, String args) {
-        // Проверка авторизации
+    public void justDOIT(ServiceManager services, InputHelper input, String args) {
         if (!services.getUserService().isAuthenticated()) {
             System.out.println("Ошибка: необходимо авторизоваться (команда 'login')");
             return;
@@ -39,7 +33,6 @@ public class ReagentDelete implements Command {
             return;
         }
 
-        // Проверка прав: можно удалять только свои реактивы или админу
         long currentUserId = services.getUserService().getCurrentUserId();
         if (reagent.getOwnerId() != currentUserId && !services.getUserService().isAdmin()) {
             System.out.println("Ошибка: у вас нет прав на удаление этого реактива");
@@ -52,19 +45,18 @@ public class ReagentDelete implements Command {
         System.out.println("   Название: " + reagent.getName());
         System.out.println("   Владелец: " + reagent.getOwnerName());
 
+        System.out.print("\nУверены, что хотите удалить? (Y/N): ");
         try {
-            System.out.print("\nУверены, что хотите удалить? (Y/N): ");
             String confirm = input.readString("", true);
             if (!confirm.equalsIgnoreCase("Y")) {
                 System.out.println("Удаление отменено");
                 return;
             }
-        } catch (IOException e) {
-            System.out.println("Ошибка ввода: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Ошибка ввода");
             return;
         }
 
-        // Сохраняем копию для отмены
         CommandHistory history = new CommandHistory("delete", "reagent");
         history.setDeletedObject(copyReagent(reagent));
         history.setObjectId(reagentId);

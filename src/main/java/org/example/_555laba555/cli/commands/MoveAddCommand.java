@@ -4,13 +4,15 @@ import org.example._555laba555.cli.Command;
 import org.example._555laba555.domain.*;
 import org.example._555laba555.cli.InputHelper;
 import org.example._555laba555.service.ServiceManager;
-import org.example._555laba555.fileManager.Conservation;
 
 public class MoveAddCommand implements Command {
-
     @Override
-    public void justDOIT(ServiceManager services, InputHelper input,
-                         Conservation storage, String args) throws Exception {
+    public void justDOIT(ServiceManager services, InputHelper input, String args) throws Exception {
+        if (!services.getUserService().isAuthenticated()) {
+            System.out.println("Ошибка: необходимо авторизоваться");
+            return;
+        }
+
         if (args.trim().isEmpty()) {
             System.out.println("Использование: move_add <ID>");
             return;
@@ -60,8 +62,8 @@ public class MoveAddCommand implements Command {
         String reason = input.readOptional("Причина (пусто если нет): ");
         if (!reason.isEmpty()) move.setReason(reason);
 
-        String owner = input.readString("Владелец (Enter - system): ", false);
-        move.setOwnerUsername(owner.isEmpty() ? "system" : owner);
+        move.setOwnerID(services.getUserService().getCurrentUserId());
+        move.setOwnerUsername(services.getUserService().getCurrentUserLogin());
 
         services.getMoveService().add(move, batch.getQuantityCurrent());
 
@@ -71,7 +73,7 @@ public class MoveAddCommand implements Command {
             batch.setQuantityCurrent(batch.getQuantityCurrent() - qty);
         }
 
-        services.getBatchService().update(batch);
+        services.getBatchService().updateQuantity(batchId, batch.getQuantityCurrent());
 
         System.out.println("Движение добавлено. Новый остаток: " +
                 batch.getQuantityCurrent() + " " + batch.getUnit());

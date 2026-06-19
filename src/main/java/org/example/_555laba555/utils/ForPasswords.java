@@ -1,5 +1,6 @@
 package org.example._555laba555.utils;
 
+import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 

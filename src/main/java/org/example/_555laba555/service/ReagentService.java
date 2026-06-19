@@ -1,6 +1,7 @@
 package org.example._555laba555.service;
 
 import org.example._555laba555.domain.Reagent;
+import org.example._555laba555.dataBase.ReagentRepository;
 import org.example._555laba555.validation.ReagentValidator;
 import org.example._555laba555.validation.ValidationException;
 import java.time.Instant;
@@ -10,25 +11,40 @@ import java.util.List;
 import java.util.Map;
 
 public class ReagentService {
-    private Map<Long, Reagent> items = new HashMap<>();
-    private long nextId = 1;
+    private final Map<Long, Reagent> items = new HashMap<>();
+    private final ReagentRepository reagentRepository;
 
-    public ReagentService() {
-        // пустой конструктор для файлового режима
+    public ReagentService(ReagentRepository reagentRepository) {
+        this.reagentRepository = reagentRepository;
     }
+
     public Reagent add(Reagent reagent) {
-        reagent.setId(nextId++);
+        ReagentValidator.validate(reagent);
         reagent.setCreatedAt(Instant.now());
         reagent.setUpdatedAt(Instant.now());
-        ReagentValidator.validate(reagent);
-        items.put(reagent.getId(), reagent);
+        long generatedId = reagentRepository.save(reagent);
+        reagent.setId(generatedId);
+        items.put(generatedId, reagent);
         return reagent;
+    }
+
+    public void loadAll() {
+        try {
+            items.clear();
+            List<Reagent> fromDb = reagentRepository.findAll();
+            for (Reagent r : fromDb) {
+                items.put(r.getId(), r);
+            }
+        } catch (Exception e) {
+            System.err.println("Ошибка загрузки реактивов: " + e.getMessage());
+        }
     }
 
     public List<Reagent> getAll() {
         return new ArrayList<>(items.values());
     }
 
+    // ✅ ДОБАВЛЕН НЕДОСТАЮЩИЙ МЕТОД
     public List<Reagent> searchByName(String text) {
         if (text == null || text.isEmpty()) {
             return getAll();
@@ -43,47 +59,23 @@ public class ReagentService {
         return result;
     }
 
-    public boolean exist(long id) {
-        return items.containsKey(id);
-    }
-
-    public boolean isEmpty() {
-        return items.isEmpty();
+    public Reagent getById(long id) {
+        return items.get(id);
     }
 
     public Reagent getReagentById(long id) {
         return items.get(id);
     }
 
-    public void update(Reagent reagent) {
-        if (!items.containsKey(reagent.getId())) {
-            throw new ValidationException("Реактив не найден");
-        }
-        reagent.setUpdatedAt(Instant.now());
-        ReagentValidator.validate(reagent);
-        items.put(reagent.getId(), reagent);
+    public boolean isEmpty() {
+        return items.isEmpty();
+    }
+
+    public boolean exist(long id) {
+        return items.containsKey(id);
     }
 
     public void remove(long id) {
-        if (!items.containsKey(id)) {
-            throw new ValidationException("Реактив не найден");
-        }
         items.remove(id);
-    }
-
-    /**
-     * Загружает список реактивов из внешнего источника (файл или БД)
-     * Очищает текущую коллекцию и заполняет новыми данными
-     *
-     * @param list список реактивов для загрузки
-     */
-    public void loadFromList(List<Reagent> list) {
-        items.clear();
-        for (Reagent r : list) {
-            items.put(r.getId(), r);
-            if (r.getId() >= nextId) {
-                nextId = r.getId() + 1;
-            }
-        }
     }
 }

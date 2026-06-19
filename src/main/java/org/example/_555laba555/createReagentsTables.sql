@@ -59,12 +59,6 @@ CREATE TABLE reagents_stock_moves (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Индексы
-CREATE INDEX idx_reagents_items_owner ON reagents_items(owner_id);
-CREATE INDEX idx_reagents_batches_reagent ON reagents_batches(reagent_id);
-CREATE INDEX idx_reagents_batches_owner ON reagents_batches(owner_id);
-CREATE INDEX idx_reagents_moves_batch ON reagents_stock_moves(batch_id);
-CREATE INDEX idx_reagents_moves_owner ON reagents_stock_moves(owner_id);
 
 -- Проверка
 SELECT table_name FROM information_schema.tables

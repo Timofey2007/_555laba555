@@ -2,86 +2,70 @@ package org.example._555laba555.dataBase;
 
 import org.example._555laba555.domain.User;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserRepository {
-
-    public void insert(User user) throws SQLException {
-        String sql = "INSERT INTO users (login, password_hash, role) VALUES (?, ?, ?)";
-        try (Connection conn = ConnectionToData.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setString(1, user.getLogin());
-            stmt.setString(2, user.getPasswordHash());
-            stmt.setString(3, user.getRole());
-
-            stmt.executeUpdate();
-            ResultSet keys = stmt.getGeneratedKeys();
-            if (keys.next()) {
-                user.setId(keys.getLong(1));
+    public void save(User user) {
+        String sql = "INSERT INTO users (login, password_hash, role) VALUES (?, ?, ?) RETURNING id";
+        try (Connection conn = DataBaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, user.getLogin());
+            pstmt.setString(2, user.getPasswordHash());
+            pstmt.setString(3, user.getRole());
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                user.setId(rs.getLong(1));
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Ошибка при регистрации пользователя: " + e.getMessage());
         }
     }
 
-    public List<User> findAll() throws SQLException {
-        List<User> users = new ArrayList<>();
+    public Map<Long, User> loadAll() {
+        Map<Long, User> users = new HashMap<>();
         String sql = "SELECT * FROM users";
-
-        try (Connection conn = ConnectionToData.getConnection();
+        try (Connection conn = DataBaseManager.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-
             while (rs.next()) {
-                User u = new User();
-                u.setId(rs.getLong("id"));
-                u.setLogin(rs.getString("login"));
-                u.setPasswordHash(rs.getString("password_hash"));
-                u.setRole(rs.getString("role"));
-                users.add(u);
+                User user = new User(rs.getLong("id"), rs.getString("login"), rs.getString("password_hash"));
+                user.setRole(rs.getString("role"));
+                users.put(user.getId(), user);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Ошибка загрузки пользователей");
         }
         return users;
     }
 
-    public User findByLogin(String login) throws SQLException {
+    public void updateLastLogin(long userId, Instant lastLogin) {
+        String sql = "UPDATE users SET last_login = ? WHERE id = ?";
+        try (Connection conn = DataBaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setTimestamp(1, Timestamp.from(lastLogin));
+            pstmt.setLong(2, userId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Не удалось обновить время последнего входа в БД");
+        }
+    }
+
+    public User findByLogin(String login) {
         String sql = "SELECT * FROM users WHERE login = ?";
-        try (Connection conn = ConnectionToData.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, login);
-            ResultSet rs = stmt.executeQuery();
+        try (Connection conn = DataBaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, login);
+            ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                User u = new User();
-                u.setId(rs.getLong("id"));
-                u.setLogin(rs.getString("login"));
-                u.setPasswordHash(rs.getString("password_hash"));
-                u.setRole(rs.getString("role"));
-                return u;
+                User user = new User(rs.getLong("id"), rs.getString("login"), rs.getString("password_hash"));
+                user.setRole(rs.getString("role"));
+                return user;
             }
-            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException("Ошибка поиска пользователя");
         }
-    }
-
-    public void update(User user) throws SQLException {
-        String sql = "UPDATE users SET login = ?, password_hash = ?, role = ? WHERE id = ?";
-        try (Connection conn = ConnectionToData.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, user.getLogin());
-            stmt.setString(2, user.getPasswordHash());
-            stmt.setString(3, user.getRole());
-            stmt.setLong(4, user.getId());
-            stmt.executeUpdate();
-        }
-    }
-
-    public void delete(long id) throws SQLException {
-        String sql = "DELETE FROM users WHERE id = ?";
-        try (Connection conn = ConnectionToData.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
-        }
+        return null;
     }
 }

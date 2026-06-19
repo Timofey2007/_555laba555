@@ -32,7 +32,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    implementation("org.postgresql:postgresql:42.7.3")  // JDBC драйвер
+    implementation("org.postgresql:postgresql:42.6.0")  // JDBC драйвер
     implementation("com.opencsv:opencsv:5.9")
 }
 

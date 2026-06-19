@@ -2,6 +2,7 @@ package org.example._555laba555.ui.commands;
 
 import org.example._555laba555.domain.BatchUnit;
 import org.example._555laba555.domain.ReagentBatch;
+import org.example._555laba555.domain.BatchStatus;
 import org.example._555laba555.service.ServiceManager;
 import java.time.Instant;
 
@@ -13,18 +14,20 @@ public class BatchAddUI {
     }
 
     public void execute(long reagentId, String label, double quantity, BatchUnit unit,
-                        String location, Instant expiresAt) {
+                       String location, Instant expiresAt) {
         ReagentBatch batch = new ReagentBatch();
-        String login = services.getUserService().getCurrentUserLogin();
-
         batch.setReagentId(reagentId);
         batch.setLabel(label);
         batch.setQuantityCurrent(quantity);
         batch.setUnit(unit);
         batch.setLocation(location);
         batch.setExpiresAt(expiresAt);
-        batch.setOwnerUsername(login);
-
+        batch.setStatus(BatchStatus.ACTIVE);
+        
+        // Устанавливаем владельца из текущего пользователя
+        batch.setOwnerId(services.getUserService().getCurrentUserId());
+        batch.setOwnerUsername(services.getUserService().getCurrentUserLogin());
+        
         services.getBatchService().add(batch);
     }
 }

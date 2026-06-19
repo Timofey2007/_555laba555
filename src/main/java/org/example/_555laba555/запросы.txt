@@ -1,0 +1,13 @@
+просмотреть реагенты с владельцем
+SELECT r.id, r.name, r.formula, r.cas, u.login AS owner
+FROM reagents r
+LEFT JOIN users u ON r.owner_id = u.id;
+
+Партии (с владельцем)
+SELECT b.id, b.label, b.quantity_current, b.unit, b.status, u.login AS owner
+FROM reagent_batches b
+LEFT JOIN users u ON b.owner_id = u.id;
+
+
+
+SELECT id, login, role, created_at, last_login FROM users;

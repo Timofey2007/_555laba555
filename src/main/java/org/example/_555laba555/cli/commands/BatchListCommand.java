@@ -1,18 +1,15 @@
 package org.example._555laba555.cli.commands;
 
 import org.example._555laba555.cli.Command;
-import org.example._555laba555.domain.ReagentBatch;
 import org.example._555laba555.cli.InputHelper;
+import org.example._555laba555.domain.ReagentBatch;
 import org.example._555laba555.service.ServiceManager;
-import org.example._555laba555.fileManager.Conservation;
 
 import java.util.List;
 
 public class BatchListCommand implements Command {
-
     @Override
-    public void justDOIT(ServiceManager services, InputHelper input,
-                         Conservation storage, String args) throws Exception {
+    public void justDOIT(ServiceManager services, InputHelper input, String args) throws Exception {
         List<ReagentBatch> batches;
 
         if (args.trim().isEmpty()) {
@@ -37,9 +34,10 @@ public class BatchListCommand implements Command {
         for (ReagentBatch b : batches) {
             String expires = b.getExpiresAt() != null ?
                     b.getExpiresAt().toString().substring(0, 10) : "не указан";
-            System.out.printf("ID: %d | %s | %.1f %s | %s | %s | %s%n",
+            System.out.printf("ID: %d | %s | %.1f %s | %s | %s | %s | Владелец: %s%n",
                     b.getId(), b.getLabel(), b.getQuantityCurrent(), b.getUnit(),
-                    b.getLocation(), expires, b.getStatus());
+                    b.getLocation(), expires, b.getStatus(),
+                    b.getOwnerUsername() != null ? b.getOwnerUsername() : "не указан");
         }
     }
 }

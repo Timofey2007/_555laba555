@@ -4,14 +4,10 @@ import org.example._555laba555.cli.Command;
 import org.example._555laba555.domain.Reagent;
 import org.example._555laba555.cli.InputHelper;
 import org.example._555laba555.service.ServiceManager;
-import org.example._555laba555.fileManager.Conservation;
 
 public class ReagAddCommand implements Command {
-
     @Override
-    public void justDOIT(ServiceManager services, InputHelper input,
-                         Conservation storage, String args) throws Exception {
-        // Проверка авторизации
+    public void justDOIT(ServiceManager services, InputHelper input, String args) throws Exception {
         if (!services.getUserService().isAuthenticated()) {
             System.out.println("Ошибка: необходимо авторизоваться (команда 'login')");
             return;
@@ -23,7 +19,6 @@ public class ReagAddCommand implements Command {
         r.setCas(input.readOptional("CAS: "));
         r.setHazardClass(input.readOptional("Класс опасности: "));
 
-        // Устанавливаем владельца из текущего авторизованного пользователя
         r.setOwnerId(services.getUserService().getCurrentUserId());
         r.setOwnerName(services.getUserService().getCurrentUserLogin());
 

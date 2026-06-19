@@ -14,14 +14,11 @@ public class MoveAddUI {
         this.services = services;
     }
 
-    public void execute(long batchId, StockMoveType type, double quantity, BatchUnit unit,
-                        String reason) {
-
+    public void execute(long batchId, StockMoveType type, double quantity, BatchUnit unit, String reason) {
         ReagentBatch batch = services.getBatchService().getById(batchId);
         if (batch == null) {
             throw new ValidationException("Партия с ID " + batchId + " не найдена");
         }
-        String login = services.getUserService().getCurrentUserLogin();
 
         StockMove move = new StockMove();
         move.setBatchId(batchId);
@@ -29,7 +26,11 @@ public class MoveAddUI {
         move.setQuantity(quantity);
         move.setUnit(unit);
         move.setReason(reason);
-        move.setOwnerUsername(login);
+
+        // Устанавливаем владельца из текущего пользователя
+        move.setOwnerId(services.getUserService().getCurrentUserId());
+        move.setOwnerUsername(services.getUserService().getCurrentUserLogin());
+
         if (move.getType() == StockMoveType.IN) {
             batch.setQuantityCurrent(batch.getQuantityCurrent() + quantity);
         } else {
@@ -37,5 +38,6 @@ public class MoveAddUI {
         }
 
         services.getMoveService().add(move, batch.getQuantityCurrent());
+        services.getBatchService().updateQuantity(batchId, batch.getQuantityCurrent());
     }
 }

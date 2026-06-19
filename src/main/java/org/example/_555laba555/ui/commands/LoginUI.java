@@ -15,6 +15,5 @@ public class LoginUI {
         }
 
         services.getUserService().login(login, password);
-        services.saveUsers();
     }
 }

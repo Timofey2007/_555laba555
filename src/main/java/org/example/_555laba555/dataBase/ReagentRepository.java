@@ -6,37 +6,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReagentRepository {
-
-    public void insert(Reagent reagent) throws SQLException {
-        String sql = "INSERT INTO reagents (name, formula, cas, hazard_class, owner_id, owner_name) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = ConnectionToData.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setString(1, reagent.getName());
-            stmt.setString(2, reagent.getFormula());
-            stmt.setString(3, reagent.getCas());
-            stmt.setString(4, reagent.getHazardClass());
-            stmt.setLong(5, reagent.getOwnerId());
-            stmt.setString(6, reagent.getOwnerName());
-
-            stmt.executeUpdate();
-            ResultSet keys = stmt.getGeneratedKeys();
-            if (keys.next()) {
-                reagent.setId(keys.getLong(1));
-            }
+    public long save(Reagent reagent) {
+        String sql = "INSERT INTO reagents (name, formula, cas, hazard_class, owner_id) VALUES (?, ?, ?, ?, ?) RETURNING id";
+        try (Connection conn = DataBaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, reagent.getName());
+            pstmt.setString(2, reagent.getFormula());
+            pstmt.setString(3, reagent.getCas());
+            pstmt.setString(4, reagent.getHazardClass());
+            pstmt.setLong(5, reagent.getOwnerId());
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getLong(1);
+        } catch (SQLException e) {
+            throw new RuntimeException("Ошибка БД при сохранении реактива: " + e.getMessage());
         }
+        return -1;
     }
 
-    public List<Reagent> findAll() throws SQLException {
-        List<Reagent> reagents = new ArrayList<>();
-        String sql = "SELECT r.*, u.login as owner_name FROM reagents r " +
-                "LEFT JOIN users u ON r.owner_id = u.id";
-
-        try (Connection conn = ConnectionToData.getConnection();
+    public List<Reagent> findAll() {
+        List<Reagent> list = new ArrayList<>();
+        String sql = "SELECT r.*, u.login as owner_name FROM reagents r LEFT JOIN users u ON r.owner_id = u.id";
+        try (Connection conn = DataBaseManager.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-
             while (rs.next()) {
                 Reagent r = new Reagent();
                 r.setId(rs.getLong("id"));
@@ -46,33 +38,22 @@ public class ReagentRepository {
                 r.setHazardClass(rs.getString("hazard_class"));
                 r.setOwnerId(rs.getLong("owner_id"));
                 r.setOwnerName(rs.getString("owner_name"));
-                reagents.add(r);
+                list.add(r);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Ошибка чтения списка реактивов");
         }
-        return reagents;
+        return list;
     }
 
-    public void update(Reagent reagent) throws SQLException {
-        String sql = "UPDATE reagents SET name = ?, formula = ?, cas = ?, hazard_class = ?, owner_name = ? WHERE id = ?";
-        try (Connection conn = ConnectionToData.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, reagent.getName());
-            stmt.setString(2, reagent.getFormula());
-            stmt.setString(3, reagent.getCas());
-            stmt.setString(4, reagent.getHazardClass());
-            stmt.setString(5, reagent.getOwnerName());
-            stmt.setLong(6, reagent.getId());
-            stmt.executeUpdate();
-        }
-    }
-
-    public void delete(long id) throws SQLException {
+    public void delete(long id) {
         String sql = "DELETE FROM reagents WHERE id = ?";
-        try (Connection conn = ConnectionToData.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
+        try (Connection conn = DataBaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Ошибка удаления реактива");
         }
     }
 }

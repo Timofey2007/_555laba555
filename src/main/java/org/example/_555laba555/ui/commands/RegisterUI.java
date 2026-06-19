@@ -11,6 +11,5 @@ public class RegisterUI {
 
     public void execute(String login, String password) throws Exception {
         services.getUserService().register(login, password);
-        services.saveUsers();
     }
 }

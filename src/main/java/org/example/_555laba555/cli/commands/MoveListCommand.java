@@ -4,15 +4,12 @@ import org.example._555laba555.cli.Command;
 import org.example._555laba555.cli.InputHelper;
 import org.example._555laba555.domain.*;
 import org.example._555laba555.service.ServiceManager;
-import org.example._555laba555.fileManager.Conservation;
 
 import java.util.List;
 
 public class MoveListCommand implements Command {
-
     @Override
-    public void justDOIT(ServiceManager services, InputHelper input,
-                         Conservation storage, String args) throws Exception {
+    public void justDOIT(ServiceManager services, InputHelper input, String args) throws Exception {
         if (args.trim().isEmpty()) {
             System.out.println("Использование: move_list <ID> [--last N]");
             return;
@@ -57,16 +54,17 @@ public class MoveListCommand implements Command {
         System.out.println("Партия: " + batch.getLabel());
         System.out.println("Текущий остаток: " + batch.getQuantityCurrent() + " " + batch.getUnit());
         System.out.println();
-        System.out.printf("%-5s %-20s %-8s %-10s %s%n",
-                "ID", "Дата", "Тип", "Количество", "Причина");
+        System.out.printf("%-5s %-20s %-8s %-10s %-15s %s%n",
+                "ID", "Дата", "Тип", "Количество", "Владелец", "Причина");
 
         for (StockMove m : moves) {
             String date = m.getMovedAt() != null ?
                     m.getMovedAt().toString().substring(0, 19).replace("T", " ") : "не указано";
             String sign = m.getType() == StockMoveType.IN ? "+" : "-";
-            System.out.printf("%-5d %-20s %-8s %s%-9s %s%n",
+            System.out.printf("%-5d %-20s %-8s %s%-9s %-15s %s%n",
                     m.getId(), date, m.getType(), sign,
                     m.getQuantity() + " " + m.getUnit(),
+                    m.getOwnerUsername() != null ? m.getOwnerUsername() : "не указан",
                     m.getReason() != null ? m.getReason() : "");
         }
     }

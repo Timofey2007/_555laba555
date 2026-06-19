@@ -1,30 +1,12 @@
 package org.example._555laba555.domain;
 
-
-
-
-/**
- * вариант 1.1:
- * 1. Owner = username (прямо строкой)
- * В объекте поле ownerUsername
- * При создании ставится текущий пользователь
- *
- * 1. Репозитории по сущностям (рекомендуемый)
- * (На каждую сущность свой класс доступа)
- * SampleRepository, MeasurementRepository, …
- * Внутри — JDBC(подключим библиотеку через Gradle) + ручной SQL(в идеале надо будет добавить в подобие help синтаксис SQL)
- */
-
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * Пользователь системы
- */
-public final class User {
+public class User {
     private long id;
     private String login;
-    private String passwordHash;  // храним только хеш!
+    private String passwordHash;
     private String role;
     private Instant createdAt;
     private Instant lastLogin;
@@ -60,9 +42,7 @@ public final class User {
     public Instant getLastLogin() { return lastLogin; }
     public void setLastLogin(Instant lastLogin) { this.lastLogin = lastLogin; }
 
-    public boolean isAdmin() {
-        return "ADMIN".equals(role); // Не баг, а фича)))))
-    }
+    public boolean isAdmin() { return "ADMIN".equals(role); }
 
     @Override
     public boolean equals(Object o) {
@@ -73,12 +53,5 @@ public final class User {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "User{id=" + id + ", login='" + login + "', role='" + role + "'}";
-    }
+    public int hashCode() { return Objects.hash(id); }
 }

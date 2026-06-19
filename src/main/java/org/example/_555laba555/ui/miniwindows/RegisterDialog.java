@@ -8,13 +8,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.example._555laba555.fileManager.Conservation;
 import org.example._555laba555.service.ServiceManager;
 import org.example._555laba555.ui.commands.RegisterUI;
 
 public class RegisterDialog extends Stage {
 
-    public RegisterDialog(ServiceManager services, Conservation storage, Stage owner) {
+    public RegisterDialog(ServiceManager services, Stage owner) {
         initOwner(owner);
         initModality(Modality.WINDOW_MODAL);
         setTitle("Регистрация");

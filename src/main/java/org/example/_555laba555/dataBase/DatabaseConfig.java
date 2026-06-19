@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * Чтение конфигурации подключения к базе данных.
- * Данные берутся из файла db.properties или из переменных окружения.
- */
 public class DatabaseConfig {
     private static final Properties props = new Properties();
 
@@ -29,14 +25,14 @@ public class DatabaseConfig {
     }
 
     public static String getDbUrl() {
-        return props.getProperty("db.url", "jdbc:postgresql://localhost:5432/dbstud");
+        return props.getProperty("db.url", "jdbc:postgresql://postgrepro.dc-edu.ru:5432/dbstud");
     }
 
     public static String getDbUser() {
-        return props.getProperty("db.user", "postgres");
+        return props.getProperty("db.user", "bk_502775_2026");
     }
 
     public static String getDbPassword() {
-        return props.getProperty("db.password", "postgres");
+        return props.getProperty("db.password", "bk_502775");
     }
 }
