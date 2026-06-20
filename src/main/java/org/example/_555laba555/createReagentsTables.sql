@@ -5,6 +5,8 @@ DROP TABLE IF EXISTS reagents_stock_moves CASCADE;
 DROP TABLE IF EXISTS reagents_batches CASCADE;
 DROP TABLE IF EXISTS reagents_items CASCADE;
 DROP TABLE IF EXISTS reagents_users CASCADE;
+DROP TABLE IF EXISTS deletion_history CASCADE;
+
 
 -- 1. Таблица пользователей
 CREATE TABLE reagents_users (
@@ -57,6 +59,16 @@ CREATE TABLE reagents_stock_moves (
     owner_name VARCHAR(50),
     moved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--пока не получилось вывести истуар
+CREATE TABLE deletion_history (
+    id SERIAL PRIMARY KEY,
+    object_type VARCHAR(20) NOT NULL,
+    object_id BIGINT NOT NULL,
+    object_data TEXT NOT NULL,
+    deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_by BIGINT REFERENCES users(id)
 );
 
 

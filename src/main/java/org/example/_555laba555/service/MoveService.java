@@ -3,6 +3,8 @@ package org.example._555laba555.service;
 import org.example._555laba555.domain.StockMove;
 import org.example._555laba555.dataBase.MoveRepository;
 import org.example._555laba555.validation.MoveValidator;
+import org.example._555laba555.validation.StorageException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,15 +12,15 @@ import java.util.Map;
 
 public class MoveService {
     private final Map<Long, StockMove> items = new HashMap<>();
-    private final MoveRepository repository;
+    private final MoveRepository moveRepository;
 
     public MoveService(MoveRepository repository) {
-        this.repository = repository;
+        this.moveRepository = repository;
     }
 
     public void loadAll() {
         items.clear();
-        List<StockMove> fromDb = repository.findAll();
+        List<StockMove> fromDb = moveRepository.findAll();
         for (StockMove m : fromDb) {
             items.put(m.getId(), m);
         }
@@ -27,14 +29,25 @@ public class MoveService {
     public StockMove add(StockMove move, double currentQuantity) {
         MoveValidator.validate(move);
         MoveValidator.checkQuantity(move, currentQuantity);
-        long generatedId = repository.save(move);
+        long generatedId = moveRepository.save(move);
         move.setId(generatedId);
         items.put(generatedId, move);
         return move;
     }
 
-    public List<StockMove> getAll() { return new ArrayList<>(items.values()); }
-    public StockMove getMoveById(long id) { return items.get(id); }
+    public List<StockMove> getAll() {
+        try {
+            List<StockMove> fromDb = moveRepository.findAll();
+            items.clear();
+            for (StockMove m : fromDb) {
+                items.put(m.getId(), m);
+            }
+            return new ArrayList<>(items.values());
+        } catch (StorageException e) {
+            System.err.println("Ошибка получения данных из БД: " + e.getMessage());
+            return new ArrayList<>(items.values());
+        }
+    }    public StockMove getMoveById(long id) { return items.get(id); }
 
     public List<StockMove> getByBatchId(long batchId, int limit) {
         List<StockMove> all = new ArrayList<>();
@@ -46,7 +59,7 @@ public class MoveService {
     }
 
     public void remove(long id) {
-        repository.delete(id);
+        moveRepository.delete(id);
         items.remove(id);
     }
 }

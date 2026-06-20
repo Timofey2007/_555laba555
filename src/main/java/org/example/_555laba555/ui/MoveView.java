@@ -10,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import org.example._555laba555.domain.StockMove;
 import org.example._555laba555.ui.miniwindows.AddMoveDialog;
+import org.example._555laba555.ui.miniwindows.DelMoveDialog;
 
 public class MoveView extends BorderPane {
     private final ServiceManager services;
@@ -33,7 +34,10 @@ public class MoveView extends BorderPane {
         refreshBtn.setOnAction(e -> refreshTable());
         Button addBtn = new Button("Добавить движение");
         addBtn.setOnAction(e -> openAddMoveDialog());
-        this.setTop(new ToolBar(refreshBtn, addBtn));
+        Button DelBtn = new Button("Удалить");
+        DelBtn.setOnAction(e -> openDelMoveDialog());
+        this.setTop(new ToolBar(refreshBtn, addBtn, DelBtn));
+
 
         // Список движений выводится в левую часть
         table = new TableView<>();
@@ -99,6 +103,11 @@ public class MoveView extends BorderPane {
     private void openAddMoveDialog() {
         AddMoveDialog dialog = new AddMoveDialog(services, (Stage) this.getScene().getWindow());
         dialog.showAndWait();
+        refreshTable();
+    }
+    private void openDelMoveDialog(){
+        DelMoveDialog dialog = new DelMoveDialog(services, (Stage) this.getScene().getWindow());
+        dialog.showAndWait();;
         refreshTable();
     }
 }

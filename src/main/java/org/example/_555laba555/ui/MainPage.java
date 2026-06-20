@@ -48,6 +48,7 @@ public class MainPage extends Application {
         tabPane.getTabs().add(new Tab("Реактивы", new ReagView(serviceManager)));
         tabPane.getTabs().add(new Tab("Партии", new BatchView(serviceManager)));
         tabPane.getTabs().add(new Tab("Движения", new MoveView(serviceManager)));
+        tabPane.getTabs().add(new Tab("История удалений", new HistoryView(serviceManager)));
 
         root.setCenter(tabPane);
         primaryStage.setResizable(true);

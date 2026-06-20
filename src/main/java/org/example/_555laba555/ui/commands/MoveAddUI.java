@@ -27,7 +27,6 @@ public class MoveAddUI {
         move.setUnit(unit);
         move.setReason(reason);
 
-        // Устанавливаем владельца из текущего пользователя
         move.setOwnerId(services.getUserService().getCurrentUserId());
         move.setOwnerUsername(services.getUserService().getCurrentUserLogin());
 

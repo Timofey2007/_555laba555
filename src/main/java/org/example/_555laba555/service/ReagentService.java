@@ -3,6 +3,7 @@ package org.example._555laba555.service;
 import org.example._555laba555.domain.Reagent;
 import org.example._555laba555.dataBase.ReagentRepository;
 import org.example._555laba555.validation.ReagentValidator;
+import org.example._555laba555.validation.StorageException;
 import org.example._555laba555.validation.ValidationException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,10 +42,18 @@ public class ReagentService {
     }
 
     public List<Reagent> getAll() {
-        return new ArrayList<>(items.values());
+        try {
+            List<Reagent> fromDb = reagentRepository.findAll();
+            items.clear();
+            for (Reagent r : fromDb) {
+                items.put(r.getId(), r);
+            }
+            return new ArrayList<>(items.values());
+        } catch (StorageException e) {
+            System.err.println("Ошибка получения данных из БД: " + e.getMessage());
+            return new ArrayList<>(items.values());
+        }
     }
-
-    // ✅ ДОБАВЛЕН НЕДОСТАЮЩИЙ МЕТОД
     public List<Reagent> searchByName(String text) {
         if (text == null || text.isEmpty()) {
             return getAll();
@@ -76,6 +85,7 @@ public class ReagentService {
     }
 
     public void remove(long id) {
+        reagentRepository.delete(id);
         items.remove(id);
     }
 }

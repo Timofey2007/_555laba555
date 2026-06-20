@@ -3,6 +3,8 @@ package org.example._555laba555.service;
 import org.example._555laba555.domain.User;
 import org.example._555laba555.utils.ForPasswords;
 import org.example._555laba555.dataBase.UserRepository;
+import org.example._555laba555.validation.StorageException;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,10 +49,27 @@ public class UserService {
         return false;
     }
 
-    public void logout() { currentUser = null; }
-    public boolean isAuthenticated() { return currentUser != null; }
-    public boolean isAdmin() { return currentUser != null && currentUser.isAdmin(); }
-    public User getCurrentUser() { return currentUser; }
-    public long getCurrentUserId() { return currentUser == null ? 0 : currentUser.getId(); }
-    public String getCurrentUserLogin() { return currentUser == null ? "не авторизован" : currentUser.getLogin(); }
+    public void logout() {
+        currentUser = null;
+    }
+
+    public boolean isAuthenticated() {
+        return currentUser != null;
+    }
+
+    public boolean isAdmin() {
+        return currentUser != null && currentUser.isAdmin();
+    }
+
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public long getCurrentUserId() {
+        return currentUser == null ? 0 : currentUser.getId();
+    }
+
+    public String getCurrentUserLogin() {
+        return currentUser == null ? "не авторизован" : currentUser.getLogin();
+    }
 }

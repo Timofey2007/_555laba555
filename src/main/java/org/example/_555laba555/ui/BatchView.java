@@ -10,6 +10,8 @@ import javafx.stage.Stage;
 import org.example._555laba555.domain.ReagentBatch;
 import org.example._555laba555.service.ServiceManager;
 import org.example._555laba555.ui.miniwindows.AddBatchDialog;
+import org.example._555laba555.ui.miniwindows.DelBatchDialog;
+import org.example._555laba555.ui.miniwindows.EdBatchDialog;
 
 public class BatchView extends BorderPane {
     private final ServiceManager services;
@@ -33,7 +35,11 @@ public class BatchView extends BorderPane {
         refreshBtn.setOnAction(e -> refreshTable());
         Button addBtn = new Button("Добавить партию");
         addBtn.setOnAction(e -> openAddBatchDialog());
-        this.setTop(new ToolBar(refreshBtn, addBtn));
+        Button delBtn = new Button("Удалить");
+        delBtn.setOnAction(e -> openDelBatchDialog());
+        Button edBtn = new Button("Изменить");
+        edBtn.setOnAction(e -> openEdBatchDialog());
+        this.setTop(new ToolBar(refreshBtn, addBtn, delBtn,edBtn));
 
         // Список партий выводится в левую часть
         table = new TableView<>();
@@ -42,7 +48,6 @@ public class BatchView extends BorderPane {
         colLabel.setCellValueFactory(new PropertyValueFactory<>("label"));
         colLabel.setPrefWidth(150);
 
-        // ДОБАВЛЕНА КОЛОНКА ВЛАДЕЛЬЦА
         TableColumn<ReagentBatch, String> colOwner = new TableColumn<>("Владелец");
         colOwner.setCellValueFactory(new PropertyValueFactory<>("ownerUsername"));
         colOwner.setPrefWidth(150);
@@ -98,6 +103,16 @@ public class BatchView extends BorderPane {
 
     private void openAddBatchDialog() {
         AddBatchDialog dialog = new AddBatchDialog(services, (Stage) this.getScene().getWindow());
+        dialog.showAndWait();
+        refreshTable();
+    }
+    private void openDelBatchDialog(){
+        DelBatchDialog dialog = new DelBatchDialog(services, (Stage) this.getScene().getWindow());
+        dialog.showAndWait();
+        refreshTable();
+    }
+    private void openEdBatchDialog(){
+        EdBatchDialog dialog = new EdBatchDialog(services, (Stage) this.getScene().getWindow());
         dialog.showAndWait();
         refreshTable();
     }

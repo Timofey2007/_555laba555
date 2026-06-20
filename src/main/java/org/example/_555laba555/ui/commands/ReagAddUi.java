@@ -17,7 +17,6 @@ public class ReagAddUi {
         reagent.setCas(cas);
         reagent.setHazardClass(hazardClass);
 
-        // Устанавливаем владельца из текущего пользователя
         reagent.setOwnerId(services.getUserService().getCurrentUserId());
         reagent.setOwnerName(services.getUserService().getCurrentUserLogin());
 

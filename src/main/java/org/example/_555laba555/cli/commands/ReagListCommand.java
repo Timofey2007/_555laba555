@@ -28,7 +28,6 @@ public class ReagListCommand implements Command {
         }
 
         System.out.printf("%-5s %-20s %-10s %-15s %-15s%n", "ID", "Название", "Формула", "CAS", "Владелец");
-        System.out.println("------------------------------------------------------------------------");
         for (Reagent r : list) {
             System.out.printf("%-5d %-20s %-10s %-15s %-15s%n",
                     r.getId(),

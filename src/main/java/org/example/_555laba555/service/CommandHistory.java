@@ -33,4 +33,9 @@ public class CommandHistory {
         return deletedObject;
     }
 
+    public long getObjectId(){
+        return objectId;
+    }
+
+
 }

@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import org.example._555laba555.domain.Reagent;
 import org.example._555laba555.service.ServiceManager;
 import org.example._555laba555.ui.miniwindows.AddReagentDialog;
+import org.example._555laba555.ui.miniwindows.DelReagentDialog;
 
 public class ReagView extends BorderPane {
     private final ServiceManager services;
@@ -29,7 +30,10 @@ public class ReagView extends BorderPane {
         refreshBtn.setOnAction(e -> refreshTable());
         Button addreagBtn = new Button("Добавить реагент");
         addreagBtn.setOnAction(e -> openAddReagentDialog());
-        this.setTop(new ToolBar(refreshBtn, addreagBtn));
+        Button delreagBtn = new Button("Удалить реагент");
+        delreagBtn.setOnAction(e -> openDelReagentDialog());
+        this.setTop(new ToolBar(refreshBtn, addreagBtn, delreagBtn));
+
 
         table = new TableView<>();
         TableColumn<Reagent, String> colName = new TableColumn<>("Название");
@@ -74,6 +78,11 @@ public class ReagView extends BorderPane {
 
     private void openAddReagentDialog() {
         AddReagentDialog dialog = new AddReagentDialog(services, (Stage) this.getScene().getWindow());
+        dialog.showAndWait();
+        refreshTable();
+    }
+    private void openDelReagentDialog() {
+        DelReagentDialog dialog = new DelReagentDialog(services, (Stage) this.getScene().getWindow());
         dialog.showAndWait();
         refreshTable();
     }

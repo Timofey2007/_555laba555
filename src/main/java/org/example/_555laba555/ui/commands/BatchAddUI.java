@@ -24,7 +24,6 @@ public class BatchAddUI {
         batch.setExpiresAt(expiresAt);
         batch.setStatus(BatchStatus.ACTIVE);
         
-        // Устанавливаем владельца из текущего пользователя
         batch.setOwnerId(services.getUserService().getCurrentUserId());
         batch.setOwnerUsername(services.getUserService().getCurrentUserLogin());
         

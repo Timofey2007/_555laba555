@@ -24,7 +24,7 @@ public class BatchShowCommand implements Command {
                 return;
             }
 
-            System.out.println("\n=== ПАРТИЯ ID: " + id + " ===");
+            System.out.println("\nПАРТИЯ ID: " + id);
             System.out.println("Метка: " + b.getLabel());
             System.out.println("ID реактива: " + b.getReagentId());
             System.out.println("Количество: " + b.getQuantityCurrent() + " " + b.getUnit());
